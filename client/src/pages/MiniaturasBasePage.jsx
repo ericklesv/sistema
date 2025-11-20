@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 
 export function MiniaturasBasePage() {
@@ -32,7 +32,7 @@ export function MiniaturasBasePage() {
 
   const fetchMiniaturas = async () => {
     try {
-      const res = await axios.get('/api/miniaturas-base');
+      const res = await api.get('/api/miniaturas-base');
       setMiniaturas(res.data);
     } catch (err) {
       console.error('Erro ao buscar miniaturas:', err);
@@ -69,12 +69,12 @@ export function MiniaturasBasePage() {
     const token = localStorage.getItem('token');
     try {
       if (editingId) {
-        await axios.put(`/api/miniaturas-base/${editingId}`, formData, {
+        await api.put(`/api/miniaturas-base/${editingId}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('Miniatura atualizada com sucesso!');
       } else {
-        const res = await axios.post('/api/miniaturas-base', formData, {
+        const res = await api.post('/api/miniaturas-base', formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setMiniaturas([...miniaturas, res.data]);
@@ -110,7 +110,7 @@ export function MiniaturasBasePage() {
 
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`/api/miniaturas-base/${id}`, {
+      await api.delete(`/api/miniaturas-base/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMiniaturas(miniaturas.filter(m => m.id !== id));
@@ -132,7 +132,7 @@ export function MiniaturasBasePage() {
     setLoadingClients(true);
     const token = localStorage.getItem('token');
     try {
-      const res = await axios.get(`/api/miniaturas-base/${miniatura.id}/clients`, {
+      const res = await api.get(`/api/miniaturas-base/${miniatura.id}/clients`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setClientsWithMiniatura(res.data);

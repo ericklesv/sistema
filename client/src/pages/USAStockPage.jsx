@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { MiniaturaAutocomplete } from '../components/MiniaturaAutocomplete';
 
@@ -46,8 +46,8 @@ export function USAStockPage() {
     const token = localStorage.getItem('token');
     try {
       const [stockRes, shipmentsRes] = await Promise.all([
-        axios.get('/api/admin/usa-stock', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('/api/admin/shipments', { headers: { Authorization: `Bearer ${token}` } })
+        api.get('/api/admin/usa-stock', { headers: { Authorization: `Bearer ${token}` } }),
+        api.get('/api/admin/shipments', { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setStockItems(stockRes.data);
       setShipments(shipmentsRes.data);
@@ -102,12 +102,12 @@ export function USAStockPage() {
       };
 
       if (editingId) {
-        await axios.put(`/api/admin/usa-stock/${editingId}`, dataToSend, {
+        await api.put(`/api/admin/usa-stock/${editingId}`, dataToSend, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('✅ Item atualizado com sucesso!');
       } else {
-        await axios.post('/api/admin/usa-stock', dataToSend, {
+        await api.post('/api/admin/usa-stock', dataToSend, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('✅ Item adicionado com sucesso!');
@@ -138,7 +138,7 @@ export function USAStockPage() {
         taxCost: parseFloat(shipmentForm.taxCost) || 0
       };
 
-      await axios.post('/api/admin/shipments', dataToSend, {
+      await api.post('/api/admin/shipments', dataToSend, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('✅ Envio criado com sucesso!');
@@ -172,7 +172,7 @@ export function USAStockPage() {
 
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`/api/admin/usa-stock/${id}`, {
+      await api.delete(`/api/admin/usa-stock/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStockItems(stockItems.filter(item => item.id !== id));
@@ -190,7 +190,7 @@ export function USAStockPage() {
 
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`/api/admin/shipments/${id}`, {
+      await api.delete(`/api/admin/shipments/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShipments(shipments.filter(shipment => shipment.id !== id));
@@ -209,7 +209,7 @@ export function USAStockPage() {
 
     const token = localStorage.getItem('token');
     try {
-      await axios.post(`/api/admin/shipments/${shipmentId}/items`, 
+      await api.post(`/api/admin/shipments/${shipmentId}/items`, 
         { stockItemId: selectedStockItem.id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -229,7 +229,7 @@ export function USAStockPage() {
 
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`/api/admin/shipments/${shipmentId}/items/${itemId}`, {
+      await api.delete(`/api/admin/shipments/${shipmentId}/items/${itemId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('✅ Item removido do envio!');

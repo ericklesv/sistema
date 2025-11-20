@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { MiniaturaAutocomplete } from '../components/MiniaturaAutocomplete';
 
@@ -41,8 +41,8 @@ export function ReadyStockPage() {
     try {
       console.log('🔄 Buscando dados...');
       const [stockRes, clientsRes] = await Promise.all([
-        axios.get('/api/admin/ready-stock', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('/api/admin/clients', { headers: { Authorization: `Bearer ${token}` } })
+        api.get('/api/admin/ready-stock', { headers: { Authorization: `Bearer ${token}` } }),
+        api.get('/api/admin/clients', { headers: { Authorization: `Bearer ${token}` } })
       ]);
       console.log('✅ Dados obtidos - Itens de estoque:', stockRes.data.length);
       setStockItems(stockRes.data);
@@ -95,12 +95,12 @@ export function ReadyStockPage() {
       console.log('📤 Enviando dados:', dataToSend);
 
       if (editingId) {
-        await axios.put(`/api/admin/ready-stock/${editingId}`, dataToSend, {
+        await api.put(`/api/admin/ready-stock/${editingId}`, dataToSend, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('✅ Item atualizado com sucesso!');
       } else {
-        const response = await axios.post('/api/admin/ready-stock', dataToSend, {
+        const response = await api.post('/api/admin/ready-stock', dataToSend, {
           headers: { Authorization: `Bearer ${token}` }
         });
         console.log('✅ Resposta do servidor:', response.data);
@@ -129,7 +129,7 @@ export function ReadyStockPage() {
 
     const token = localStorage.getItem('token');
     try {
-      await axios.post(
+      await api.post(
         '/api/admin/ready-stock/send-to-garage',
         {
           readyStockId: selectedStockItem.id,
@@ -168,7 +168,7 @@ export function ReadyStockPage() {
 
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`/api/admin/ready-stock/${id}`, {
+      await api.delete(`/api/admin/ready-stock/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStockItems(stockItems.filter(item => item.id !== id));

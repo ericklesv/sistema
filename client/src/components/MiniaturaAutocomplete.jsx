@@ -34,7 +34,7 @@ export function MiniaturaAutocomplete({ value, onChange, onSelectMiniatura, plac
   const fetchSuggestions = async (searchTerm) => {
     setLoading(true);
     try {
-      const response = await axios.get('/api/miniaturas-base');
+      const response = await api.get('/api/miniaturas-base');
       
       // Filtrar miniaturas que correspondem ao termo de busca
       const filtered = response.data.filter(m =>

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { MiniaturaThumbnail } from '../components/MiniaturaThumbnail';
 import { MiniaturaAutocomplete } from '../components/MiniaturaAutocomplete';
@@ -37,10 +37,10 @@ export function DashboardPage() {
     const token = localStorage.getItem('token');
     try {
       const [preSalesRes, garageRes] = await Promise.all([
-        axios.get('/api/miniaturas/pre-sales', {
+        api.get('/api/miniaturas/pre-sales', {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get('/api/miniaturas/garage', {
+        api.get('/api/miniaturas/garage', {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -79,7 +79,7 @@ export function DashboardPage() {
         dataToSend.paidValue = parseFloat(formData.paidValue) || 0;
       }
 
-      await axios.post(endpoint, dataToSend, {
+      await api.post(endpoint, dataToSend, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFormData({ name: '', description: '', deliveryDate: '', totalValue: '', paidValue: '', entranceDate: '', stock: '' });
@@ -100,7 +100,7 @@ export function DashboardPage() {
     const endpoint = activeTab === 'pre-sales' ? `/api/miniaturas/pre-sales/${id}` : `/api/miniaturas/garage/${id}`;
 
     try {
-      await axios.delete(endpoint, {
+      await api.delete(endpoint, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchData();

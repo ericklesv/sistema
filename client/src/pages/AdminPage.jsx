@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { MiniaturaAutocomplete } from '../components/MiniaturaAutocomplete';
 
@@ -51,7 +51,7 @@ export function AdminPage() {
   const fetchUsers = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await axios.get('/api/admin/users', {
+      const res = await api.get('/api/admin/users', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(res.data);
@@ -67,10 +67,10 @@ export function AdminPage() {
     const token = localStorage.getItem('token');
     try {
       const [preSalesRes, garageRes] = await Promise.all([
-        axios.get(`/api/admin/users/${userId}/pre-sales`, {
+        api.get(`/api/admin/users/${userId}/pre-sales`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`/api/admin/users/${userId}/garage`, {
+        api.get(`/api/admin/users/${userId}/garage`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -107,7 +107,7 @@ export function AdminPage() {
         dataToSend.paidValue = parseFloat(formData.paidValue) || 0;
       }
 
-      await axios.post(endpoint, dataToSend, {
+      await api.post(endpoint, dataToSend, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFormData({ name: '', description: '', deliveryDate: '', totalValue: '', paidValue: '', entranceDate: '', stock: '' });
@@ -127,7 +127,7 @@ export function AdminPage() {
       : `/api/admin/garage/${id}`;
 
     try {
-      await axios.delete(endpoint, {
+      await api.delete(endpoint, {
         headers: { Authorization: `Bearer ${token}` }
       });
       await handleSelectUser(selectedUser);
@@ -146,7 +146,7 @@ export function AdminPage() {
 
     const token = localStorage.getItem('token');
     try {
-      await axios.post('/api/admin/users/create-client', {
+      await api.post('/api/admin/users/create-client', {
         username: newClientData.username,
         email: newClientData.email,
         whatsapp: newClientData.whatsapp,
@@ -184,7 +184,7 @@ export function AdminPage() {
         ? `/api/admin/pre-sales/${editingItem.id}`
         : `/api/admin/garage/${editingItem.id}`;
       
-      await axios.put(endpoint, {
+      await api.put(endpoint, {
         paidValue: parseFloat(editFormData.paidValue) || 0,
         situation: editFormData.situation,
         status: editingItem.status

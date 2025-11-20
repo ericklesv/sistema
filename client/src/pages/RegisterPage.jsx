@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 
 export function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -23,7 +23,7 @@ export function RegisterPage() {
     setLoading(true);
 
     try {
-      await axios.post('/api/auth/register', { username, email, password });
+      await api.post('/api/auth/register', { username, email, password });
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.error || 'Erro ao registrar');
