@@ -1,0 +1,82 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Production builds
+dist/
+build/
+.next/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# IDE settings (but not all - keep some configs)
+.vscode/launch.json
+.vscode/settings.json
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Database
+*.db
+*.db-journal
+sistema.db
+sistema.db-journal
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE plugins
+.eslintcache
+.prettiercache
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+
+# Cache directories
+.cache/
+.parcel-cache/
+.turbo/
+dist/
+
+# Miscellaneous
+.cache
+.parcel-cache
+.turbo
+dist
+
+# Project specific
+dist/
+.env
+*.lock

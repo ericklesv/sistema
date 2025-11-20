@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  email     String    @unique
+  password  String
+  whatsapp  String?
+  role      String    @default("client")
+  createdAt DateTime  @default(now())
+
+  preSales  PreSale[]
+  garage    Garage[]
+
+  @@map("users")
+}
+
+model PreSale {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  name          String
+  description   String?
+  photoUrl      String?
+  addedDate     DateTime  @default(now())
+  deliveryDate  DateTime?
+  status        String    @default("pending")
+  situation     String?   @default("Esperando lançamento")
+  totalValue    Float     @default(0)
+  paidValue     Float     @default(0)
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("pre_sales")
+}
+
+model Garage {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  name          String
+  description   String?
+  photoUrl      String?
+  addedDate     DateTime  @default(now())
+  deliveryDate  DateTime?
+  status        String    @default("pending")
+  totalValue    Float     @default(0)
+  paidValue     Float     @default(0)
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("garage")
+}
+
+model USAStock {
+  id              Int       @id @default(autoincrement())
+  miniaturaBaseId Int?
+  shipmentId      Int?
+  name            String
+  brand           String?
+  quantity        Int       @default(1)
+  price           Float     @default(0)
+  weight          Float?    @default(0)
+  notes           String?
+  addedDate       DateTime  @default(now())
+  updatedDate     DateTime  @updatedAt
+
+  miniatura       MiniaturaBase?  @relation(fields: [miniaturaBaseId], references: [id], onDelete: SetNull)
+  shipment        Shipment?       @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+
+  @@map("usa_stock")
+}
+
+model Shipment {
+  id              Int       @id @default(autoincrement())
+  shippingDate    DateTime
+  shippingCost    Float     @default(0)
+  taxCost         Float     @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  items           USAStock[]
+
+  @@map("shipments")
+}
+
+model MiniaturaBase {
+  id            Int       @id @default(autoincrement())
+  code          String    @unique
+  name          String
+  brand         String
+  photoUrl      String?
+  createdAt     DateTime  @default(now())
+
+  usaStock      USAStock[]
+
+  @@map("miniatura_base")
+}
