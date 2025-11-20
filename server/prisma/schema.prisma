@@ -101,6 +101,23 @@ model MiniaturaBase {
   createdAt     DateTime  @default(now())
 
   usaStock      USAStock[]
+  readyStock    ReadyStock[]
 
   @@map("miniatura_base")
+}
+
+model ReadyStock {
+  id              Int       @id @default(autoincrement())
+  miniaturaBaseId Int?
+  name            String
+  brand           String?
+  quantity        Int       @default(1)
+  price           Float     @default(0)
+  notes           String?
+  addedDate       DateTime  @default(now())
+  updatedDate     DateTime  @updatedAt
+
+  miniatura       MiniaturaBase?  @relation(fields: [miniaturaBaseId], references: [id], onDelete: SetNull)
+
+  @@map("ready_stock")
 }

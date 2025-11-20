@@ -17,6 +17,7 @@ router.use(isAdmin);
 
 // Usuários
 router.get('/users', adminController.getAllUsers);
+router.get('/clients', adminController.getAllUsers); // Alias para compatibilidade
 router.post('/users/create-client', adminController.createClient);
 
 // Pré-vendas

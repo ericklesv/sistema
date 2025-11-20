@@ -90,9 +90,13 @@ export function MiniaturaThumbnail({ miniatura, onDelete, type }) {
                   📦 ESTOQUE: <strong>{miniatura.totalValue}</strong>
                 </div>
               )}
-              {miniatura.paidValue !== undefined && (
-                <div className="text-orange-700 dark:text-orange-100">
-                  💵 VALOR EM ABERTO: <strong>R$ {parseFloat(miniatura.paidValue).toFixed(2)}</strong>
+              {miniatura.totalValue !== undefined && miniatura.paidValue !== undefined && (
+                <div className={`${
+                  miniatura.totalValue - miniatura.paidValue > 0
+                    ? 'text-orange-700 dark:text-orange-100'
+                    : 'text-green-700 dark:text-green-100'
+                }`}>
+                  💵 VALOR EM ABERTO: <strong>R$ {(miniatura.totalValue - miniatura.paidValue).toFixed(2)}</strong>
                 </div>
               )}
             </div>
@@ -129,13 +133,13 @@ export function MiniaturaThumbnail({ miniatura, onDelete, type }) {
             </div>
           )}
 
-          {/* Status */}
-          <div className="flex items-center gap-2">
-            <span>{miniatura.status === 'completed' ? '✅' : '⏳'}</span>
-            <span className="font-semibold">
-              {miniatura.status === 'completed' ? 'Concluído' : 'Pendente'}
-            </span>
-          </div>
+          {/* Status - apenas mostrar se não estiver completo (pago) OU se tiver valor em aberto na garagem */}
+          {miniatura.status !== 'completed' && (isGarage ? (miniatura.totalValue - miniatura.paidValue) > 0 : true) && (
+            <div className="flex items-center gap-2">
+              <span>⏳</span>
+              <span className="font-semibold">Pendente</span>
+            </div>
+          )}
         </div>
 
         {/* Botão Deletar */}

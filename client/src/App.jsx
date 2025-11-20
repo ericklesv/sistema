@@ -8,6 +8,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { AdminPage } from './pages/AdminPage';
 import { MiniaturasBasePage } from './pages/MiniaturasBasePage';
 import { USAStockPage } from './pages/USAStockPage';
+import { ReadyStockPage } from './pages/ReadyStockPage';
 import './index.css';
 
 function PrivateRoute({ children }) {
@@ -62,6 +63,14 @@ function AppContent() {
           element={
             <PrivateRoute>
               <USAStockPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/ready-stock"
+          element={
+            <PrivateRoute>
+              <ReadyStockPage />
             </PrivateRoute>
           }
         />

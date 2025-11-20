@@ -7,6 +7,7 @@ const miniaturaRoutes = require('./routes/miniatura');
 const miniaturaBaseRoutes = require('./routes/miniaturaBase');
 const adminRoutes = require('./routes/admin');
 const usaStockRoutes = require('./routes/usaStock');
+const readyStockRoutes = require('./routes/readyStock');
 const shipmentRoutes = require('./routes/shipment');
 
 const app = express();
@@ -22,6 +23,7 @@ app.use('/api/miniaturas', miniaturaRoutes);
 app.use('/api', miniaturaBaseRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin', usaStockRoutes);
+app.use('/api/admin', readyStockRoutes);
 app.use('/api/admin', shipmentRoutes);
 
 // Rota de teste

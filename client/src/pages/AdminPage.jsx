@@ -179,7 +179,12 @@ export function AdminPage() {
     const token = localStorage.getItem('token');
     
     try {
-      await axios.put(`/api/admin/pre-sales/${editingItem.id}`, {
+      // Usar a rota correta baseada na aba ativa
+      const endpoint = activeTab === 'pre-sales' 
+        ? `/api/admin/pre-sales/${editingItem.id}`
+        : `/api/admin/garage/${editingItem.id}`;
+      
+      await axios.put(endpoint, {
         paidValue: parseFloat(editFormData.paidValue) || 0,
         situation: editFormData.situation,
         status: editingItem.status

@@ -18,14 +18,10 @@ export function Navbar() {
         <div className="flex justify-between items-center h-16">
         <Link to="/" className="flex items-center gap-2 group">
           <img 
-            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='55' fill='%231e40af' stroke='%23999' stroke-width='3'/%3E%3Ctext x='60' y='75' font-size='48' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial'%3EEV%3C/text%3E%3C/svg%3E"
+            src="/images/evs-minis-logo.png"
             alt="EVS MINIS Logo" 
-            className="w-14 h-14 drop-shadow-lg group-hover:scale-110 transition-transform"
+            className="h-12 w-auto drop-shadow-lg group-hover:scale-110 transition-transform"
           />
-          <div className="flex flex-col leading-tight">
-            <span className="text-xl font-black text-blue-600 dark:text-blue-400">EVS</span>
-            <span className="text-xs font-bold text-gray-600 dark:text-gray-300">MINIS</span>
-          </div>
         </Link>          <div className="flex items-center gap-4">
             {user && (
               <>
@@ -51,6 +47,12 @@ export function Navbar() {
                       className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-3 py-1 rounded font-semibold text-sm transition-all shadow-md hover:shadow-lg"
                     >
                       🚚 USA Stock
+                    </Link>
+                    <Link
+                      to="/admin/ready-stock"
+                      className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white px-3 py-1 rounded font-semibold text-sm transition-all shadow-md hover:shadow-lg"
+                    >
+                      📦 Pronta Entrega
                     </Link>
                   </>
                 )}

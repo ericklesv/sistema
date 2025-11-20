@@ -361,6 +361,7 @@ export function USAStockPage() {
                   <table className="w-full">
                     <thead className="bg-gray-100 dark:bg-gray-700">
                       <tr>
+                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Foto</th>
                         <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Nome</th>
                         <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Marca</th>
                         <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900 dark:text-white">Qtd</th>
@@ -373,6 +374,19 @@ export function USAStockPage() {
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                       {filteredStockItems.map((item) => (
                         <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <td className="px-6 py-4">
+                            {item.miniatura?.photoUrl ? (
+                              <img
+                                src={item.miniatura.photoUrl}
+                                alt={item.name}
+                                className="w-16 h-16 object-cover rounded-lg shadow-md"
+                              />
+                            ) : (
+                              <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                <span className="text-gray-400 text-2xl">📦</span>
+                              </div>
+                            )}
+                          </td>
                           <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{item.name}</td>
                           <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{item.brand || '-'}</td>
                           <td className="px-6 py-4 text-sm text-center font-semibold text-gray-900 dark:text-white">{item.quantity}</td>
@@ -492,6 +506,7 @@ export function USAStockPage() {
                           <table className="w-full text-sm">
                             <thead className="bg-gray-100 dark:bg-gray-700">
                               <tr>
+                                <th className="px-4 py-2 text-left font-semibold text-gray-900 dark:text-white">Foto</th>
                                 <th className="px-4 py-2 text-left font-semibold text-gray-900 dark:text-white">Nome</th>
                                 <th className="px-4 py-2 text-left font-semibold text-gray-900 dark:text-white">Marca</th>
                                 <th className="px-4 py-2 text-center font-semibold text-gray-900 dark:text-white">Qtd</th>
@@ -503,6 +518,19 @@ export function USAStockPage() {
                             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                               {shipment.items.map((item) => (
                                 <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-2">
+                                    {item.miniatura?.photoUrl ? (
+                                      <img
+                                        src={item.miniatura.photoUrl}
+                                        alt={item.name}
+                                        className="w-12 h-12 object-cover rounded-lg shadow-md"
+                                      />
+                                    ) : (
+                                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                        <span className="text-gray-400 text-xl">📦</span>
+                                      </div>
+                                    )}
+                                  </td>
                                   <td className="px-4 py-2 text-gray-900 dark:text-white">{item.name}</td>
                                   <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{item.brand || '-'}</td>
                                   <td className="px-4 py-2 text-center text-gray-900 dark:text-white">{item.quantity}</td>
