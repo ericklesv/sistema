@@ -198,15 +198,17 @@ export function MiniaturasBasePage() {
     const token = localStorage.getItem('token');
     try {
       if (editingId) {
-        // Garantir que availableQuantity é um número
         const dataToSend = {
           ...formData,
           availableQuantity: parseInt(formData.availableQuantity) || 0
         };
-        
-        await api.put(`/api/miniaturas-base/${editingId}`, dataToSend, {
+
+        const response = await api.put(`/api/miniaturas-base/${editingId}`, dataToSend, {
           headers: { Authorization: `Bearer ${token}` }
         });
+
+        // Atualiza estado local sem depender de refetch imediato
+        setMiniaturas(prev => prev.map(m => m.id === editingId ? response.data : m));
         alert('Miniatura atualizada com sucesso!');
       } else {
         const res = await api.post('/api/miniaturas-base', formData, {
@@ -215,13 +217,26 @@ export function MiniaturasBasePage() {
         setMiniaturas([...miniaturas, res.data]);
         alert(`✅ Miniatura criada com código: ${res.data.code}`);
       }
-      
+
       resetForm();
       setShowAddModal(false);
+      // Refetch para garantir sincronização (assíncrono)
       fetchMiniaturas();
     } catch (err) {
       console.error('Erro ao salvar miniatura:', err);
-      alert('Erro ao salvar miniatura');
+      if (err.response) {
+        if (err.response.status === 403) {
+          alert('Acesso negado: sua sessão não tem permissão (admin obrigatório).');
+        } else if (err.response.status === 401) {
+          alert('Sessão expirada. Faça login novamente.');
+        } else if (err.response.status === 404) {
+          alert('Miniatura não encontrada.');
+        } else {
+          alert('Erro ao salvar miniatura.');
+        }
+      } else {
+        alert('Falha de conexão ao salvar miniatura.');
+      }
     }
   };
 

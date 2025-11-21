@@ -83,7 +83,10 @@ exports.updateMiniaturaBase = async (req, res) => {
     if (photoUrl !== undefined) updateData.photoUrl = photoUrl;
     if (isPreOrder !== undefined) updateData.isPreOrder = isPreOrder;
     if (releaseDate !== undefined) updateData.releaseDate = releaseDate ? new Date(releaseDate) : null;
-    if (availableQuantity !== undefined) updateData.availableQuantity = parseInt(availableQuantity);
+    if (availableQuantity !== undefined) {
+      const parsed = parseInt(availableQuantity);
+      updateData.availableQuantity = Number.isNaN(parsed) ? 0 : parsed;
+    }
 
     const miniatura = await prisma.miniaturaBase.update({
       where: { id: parseInt(id) },

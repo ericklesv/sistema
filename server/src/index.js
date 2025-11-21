@@ -10,6 +10,8 @@ const usaStockRoutes = require('./routes/usaStock');
 const readyStockRoutes = require('./routes/readyStock');
 const shipmentRoutes = require('./routes/shipment');
 
+const prisma = require('./db/prisma');
+const pkg = require('../package.json');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -30,9 +32,27 @@ app.use('/api/admin', usaStockRoutes);
 app.use('/api/admin', readyStockRoutes);
 app.use('/api/admin', shipmentRoutes);
 
-// Rota de teste
-app.get('/api/health', (req, res) => {
-  res.json({ message: 'Servidor está funcionando!' });
+// Rota de health detalhada
+app.get('/api/health', async (req, res) => {
+  try {
+    const miniaturasCount = await prisma.miniaturaBase.count();
+    const preSalesCount = await prisma.preSale.count();
+    const garageCount = await prisma.garage.count();
+    res.json({
+      status: 'ok',
+      version: pkg.version,
+      commit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null,
+      time: new Date().toISOString(),
+      database: 'PostgreSQL',
+      counts: {
+        miniaturasBase: miniaturasCount,
+        preSales: preSalesCount,
+        garage: garageCount
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ status: 'error', error: err.message });
+  }
 });
 
 // Iniciar servidor
