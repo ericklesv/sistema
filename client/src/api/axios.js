@@ -1,20 +1,16 @@
 import axios from 'axios';
 
-// Base configurada pelo ambiente
-const rawBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// URL base (SEM /api no final). Em produção defina VITE_API_URL como apenas o domínio.
+const raw = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Remove barras finais duplicadas
+const base = raw.replace(/\/+$/,'');
 
-// Se o usuário configurou a variável já com /api, removemos para evitar duplicação
-const baseURL = rawBase.endsWith('/api') ? rawBase.replace(/\/api$/, '') : rawBase;
+if (base.match(/\/api$/)) {
+  // Aviso em dev: preferir definir sem /api para evitar ambiguidade
+  console.warn('[axios] VITE_API_URL termina com /api. Recomenda-se remover o /api e manter chamadas com prefixo /api no código.');
+}
 
-const api = axios.create({ baseURL });
-
-// Interceptor para evitar /api/api/... quando base já inclui /api
-api.interceptors.request.use((config) => {
-  // Se a base termina em /api e a URL começa com /api/, removemos o primeiro /api
-  if (rawBase.endsWith('/api') && config.url.startsWith('/api/')) {
-    config.url = config.url.replace(/^\/api\//, '/');
-  }
-  return config;
-});
+// Instância simples; cada chamada do frontend usa caminhos começando por /api/...
+const api = axios.create({ baseURL: base });
 
 export default api;
