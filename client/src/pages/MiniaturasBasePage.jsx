@@ -105,6 +105,12 @@ export function MiniaturasBasePage() {
   };
 
   const handleShowAddToClientModal = async (miniatura) => {
+    // Validar estoque antes de abrir o modal
+    if ((miniatura.stockQuantity || 0) <= 0) {
+      alert('⚠️ Esta miniatura não tem estoque disponível');
+      return;
+    }
+
     setSelectedMiniaturaForClient(miniatura);
     setAddToClientData({ userId: '', totalValue: '', paidValue: '' });
     
@@ -130,18 +136,32 @@ export function MiniaturasBasePage() {
       alert('Selecione um cliente');
       return;
     }
+
+    if (!addToClientData.totalValue || parseFloat(addToClientData.totalValue) <= 0) {
+      alert('⚠️ Informe o valor total da miniatura');
+      return;
+    }
     
     try {
-      await api.post(`/api/miniaturas-base/${selectedMiniaturaForClient.id}/add-to-client`, 
+      const response = await api.post(`/api/miniaturas-base/${selectedMiniaturaForClient.id}/add-to-client`, 
         addToClientData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      await fetchMiniaturas();
+      console.log('✅ Miniatura adicionada:', response.data);
+      
+      // Atualizar quantidade na UI imediatamente
+      setMiniaturas(prev => prev.map(m => 
+        m.id === selectedMiniaturaForClient.id 
+          ? { ...m, stockQuantity: response.data.newStockQuantity }
+          : m
+      ));
+      
       setShowAddToClientModal(false);
-      alert('✅ Miniatura adicionada ao cliente com sucesso!');
+      alert(`✅ Miniatura adicionada à garagem do cliente!\n📦 Estoque restante: ${response.data.newStockQuantity}`);
     } catch (err) {
-      console.error('Erro ao adicionar:', err);
+      console.error('❌ Erro ao adicionar:', err);
+      console.error('📋 Detalhes:', err.response?.data);
       alert('❌ ' + (err.response?.data?.error || 'Erro ao adicionar miniatura'));
     }
   };
@@ -461,8 +481,13 @@ export function MiniaturasBasePage() {
                         <div className="flex justify-center gap-2">
                           <button
                             onClick={() => handleShowAddToClientModal(miniatura)}
-                            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition text-sm"
-                            title="Adicionar ao cliente"
+                            disabled={(miniatura.stockQuantity || 0) <= 0}
+                            className={`px-3 py-1 rounded transition text-sm ${
+                              (miniatura.stockQuantity || 0) > 0
+                                ? 'bg-blue-500 hover:bg-blue-600 text-white cursor-pointer'
+                                : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50'
+                            }`}
+                            title={(miniatura.stockQuantity || 0) > 0 ? "Adicionar ao cliente" : "Sem estoque"}
                           >
                             👤➕
                           </button>

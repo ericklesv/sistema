@@ -243,7 +243,7 @@ exports.getClientsWithMiniatura = async (req, res) => {
   }
 };
 
-// Adicionar miniatura do banco para pré-venda do cliente
+// Adicionar miniatura do banco para garagem do cliente
 exports.addMiniaturaToClientPreSale = async (req, res) => {
   const { miniaturaId } = req.params;
   const { userId, totalValue, paidValue } = req.body;
@@ -258,13 +258,13 @@ exports.addMiniaturaToClientPreSale = async (req, res) => {
       return res.status(404).json({ error: 'Miniatura não encontrada' });
     }
 
-    // Verificar se há quantidade disponível
-    if (miniatura.availableQuantity <= 0) {
+    // Verificar se há quantidade disponível no estoque
+    if ((miniatura.stockQuantity || 0) <= 0) {
       return res.status(400).json({ error: 'Miniatura sem estoque disponível' });
     }
 
-    // Criar pré-venda para o cliente
-    const preSale = await prisma.preSale.create({
+    // Criar entrada na garagem do cliente
+    const garage = await prisma.garage.create({
       data: {
         userId: parseInt(userId),
         name: miniatura.name,
@@ -273,21 +273,22 @@ exports.addMiniaturaToClientPreSale = async (req, res) => {
         deliveryDate: miniatura.releaseDate,
         totalValue: parseFloat(totalValue) || 0,
         paidValue: parseFloat(paidValue) || 0,
-        situation: miniatura.isPreOrder ? 'Esperando lançamento' : 'Disponível'
+        status: 'delivered'
       }
     });
 
-    // Decrementar quantidade disponível
+    // Decrementar quantidade no estoque
     await prisma.miniaturaBase.update({
       where: { id: parseInt(miniaturaId) },
       data: {
-        availableQuantity: miniatura.availableQuantity - 1
+        stockQuantity: miniatura.stockQuantity - 1
       }
     });
 
     res.json({
-      message: 'Miniatura adicionada ao cliente com sucesso',
-      preSale
+      message: 'Miniatura adicionada à garagem do cliente com sucesso',
+      garage,
+      newStockQuantity: miniatura.stockQuantity - 1
     });
   } catch (err) {
     console.error('Erro ao adicionar miniatura ao cliente:', err);
