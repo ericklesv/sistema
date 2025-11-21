@@ -17,6 +17,8 @@ export function PreOrderPage() {
     paidValue: ''
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [clientSearchTerm, setClientSearchTerm] = useState('');
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showQuantityModal, setShowQuantityModal] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -74,8 +76,26 @@ export function PreOrderPage() {
       return;
     }
     setSelectedPreOrder(preOrder);
+    setSelectedClient(null);
+    setClientSearchTerm('');
     setSendFormData({ totalValue: '', paidValue: '' });
     setShowSendToClientModal(true);
+  };
+
+  const filteredClients = clients.filter(client => {
+    if (!clientSearchTerm) return true;
+    const search = clientSearchTerm.toLowerCase();
+    return (
+      client.username?.toLowerCase().includes(search) ||
+      client.email?.toLowerCase().includes(search) ||
+      client.phone?.toLowerCase().includes(search)
+    );
+  });
+
+  const handleSelectClient = (client) => {
+    setSelectedClient(client.id);
+    setClientSearchTerm(`${client.username} (${client.email})`);
+    setShowClientSuggestions(false);
   };
 
   const handleShowEditModal = (preOrder) => {
@@ -694,23 +714,46 @@ export function PreOrderPage() {
 
               <form onSubmit={handleSendToClient}>
                 <div className="space-y-4">
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Cliente *
+                      Cliente * (busque por nome, email ou celular)
                     </label>
-                    <select
-                      value={selectedClient || ''}
-                      onChange={(e) => setSelectedClient(e.target.value)}
+                    <input
+                      type="text"
+                      value={clientSearchTerm}
+                      onChange={(e) => {
+                        setClientSearchTerm(e.target.value);
+                        setShowClientSuggestions(true);
+                        if (!e.target.value) setSelectedClient(null);
+                      }}
+                      onFocus={() => setShowClientSuggestions(true)}
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500"
+                      placeholder="Digite para buscar..."
                       required
-                    >
-                      <option value="">Selecione um cliente</option>
-                      {clients.map(client => (
-                        <option key={client.id} value={client.id}>
-                          {client.username} ({client.email})
-                        </option>
-                      ))}
-                    </select>
+                    />
+                    {showClientSuggestions && filteredClients.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {filteredClients.map(client => (
+                          <div
+                            key={client.id}
+                            onClick={() => handleSelectClient(client)}
+                            className="px-3 py-2 hover:bg-green-50 dark:hover:bg-slate-600 cursor-pointer border-b border-gray-100 dark:border-gray-600 last:border-0"
+                          >
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              {client.username}
+                            </div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                              📧 {client.email}
+                            </div>
+                            {client.phone && (
+                              <div className="text-xs text-gray-600 dark:text-gray-400">
+                                📱 {client.phone}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div>
