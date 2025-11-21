@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
+import DateInput from '../components/DateInput';
 
 export function MiniaturasBasePage() {
   const { user } = useContext(AuthContext);
@@ -10,10 +11,13 @@ export function MiniaturasBasePage() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [preOrderFilter, setPreOrderFilter] = useState('all'); // 'all', 'released', 'preorder'
   const [formData, setFormData] = useState({
     name: '',
     brand: '',
-    photoUrl: ''
+    photoUrl: '',
+    isPreOrder: false,
+    releaseDate: ''
   });
   const [photoPreview, setPhotoPreview] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -126,7 +130,9 @@ export function MiniaturasBasePage() {
     setFormData({
       name: miniatura.name,
       brand: miniatura.brand,
-      photoUrl: miniatura.photoUrl || ''
+      photoUrl: miniatura.photoUrl || '',
+      isPreOrder: miniatura.isPreOrder || false,
+      releaseDate: miniatura.releaseDate || ''
     });
     if (miniatura.photoUrl) {
       setPhotoPreview(miniatura.photoUrl);
@@ -176,11 +182,16 @@ export function MiniaturasBasePage() {
     }
   };
 
-  const filteredMiniaturas = miniaturas.filter(m =>
-    m.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.brand.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMiniaturas = miniaturas.filter(m => {
+    const matchesSearch = m.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.brand.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (preOrderFilter === 'all') return matchesSearch;
+    if (preOrderFilter === 'preorder') return matchesSearch && m.isPreOrder;
+    if (preOrderFilter === 'released') return matchesSearch && !m.isPreOrder;
+    return matchesSearch;
+  });
 
   if (loading) {
     return <div className="p-8 text-center">Carregando...</div>;
@@ -220,6 +231,40 @@ export function MiniaturasBasePage() {
           />
         </div>
 
+        {/* Filtros de Pré-Venda */}
+        <div className="flex gap-3 mb-6">
+          <button
+            onClick={() => setPreOrderFilter('all')}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              preOrderFilter === 'all'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600'
+            }`}
+          >
+            Todas
+          </button>
+          <button
+            onClick={() => setPreOrderFilter('released')}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              preOrderFilter === 'released'
+                ? 'bg-green-600 text-white'
+                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600'
+            }`}
+          >
+            ✅ Já Lançadas
+          </button>
+          <button
+            onClick={() => setPreOrderFilter('preorder')}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              preOrderFilter === 'preorder'
+                ? 'bg-purple-600 text-white'
+                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600'
+            }`}
+          >
+            🚀 Pré-Vendas
+          </button>
+        </div>
+
         {/* Tabela de Miniaturas */}
         <div className="bg-white dark:bg-slate-700 rounded-lg shadow-lg overflow-hidden">
           {filteredMiniaturas.length === 0 ? (
@@ -240,6 +285,9 @@ export function MiniaturasBasePage() {
                     </th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                       Marca
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      Status
                     </th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                       Foto
@@ -269,6 +317,24 @@ export function MiniaturasBasePage() {
                       </td>
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                         {miniatura.brand}
+                      </td>
+                      <td className="px-6 py-4">
+                        {miniatura.isPreOrder ? (
+                          <div className="flex flex-col gap-1">
+                            <span className="inline-flex items-center px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-xs font-semibold">
+                              🚀 PRÉ-VENDA
+                            </span>
+                            {miniatura.releaseDate && (
+                              <span className="text-xs text-gray-600 dark:text-gray-400">
+                                Lançamento: {new Date(miniatura.releaseDate).toLocaleDateString('pt-BR')}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs font-semibold">
+                            ✅ LANÇADA
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         {miniatura.photoUrl ? (
@@ -377,6 +443,30 @@ export function MiniaturasBasePage() {
                     </div>
                   )}
                 </div>
+
+                {/* Pré-Venda */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="isPreOrder"
+                    checked={formData.isPreOrder}
+                    onChange={(e) => setFormData({ ...formData, isPreOrder: e.target.checked, releaseDate: e.target.checked ? formData.releaseDate : '' })}
+                    className="w-4 h-4 text-blue-600 bg-white dark:bg-slate-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="isPreOrder" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    🚀 É Pré-Venda?
+                  </label>
+                </div>
+
+                {/* Data de Lançamento */}
+                {formData.isPreOrder && (
+                  <DateInput
+                    label="Data de Lançamento"
+                    value={formData.releaseDate}
+                    onChange={(e) => setFormData({ ...formData, releaseDate: e.target.value })}
+                    placeholder="DD/MM/AAAA"
+                  />
+                )}
 
                 {/* Botões */}
                 <div className="flex gap-3 pt-4">
