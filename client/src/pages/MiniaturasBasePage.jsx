@@ -25,8 +25,28 @@ export function MiniaturasBasePage() {
   const [selectedMiniaturaForStatus, setSelectedMiniaturaForStatus] = useState(null);
   const [statusFormData, setStatusFormData] = useState({
     isPreOrder: true,
-    releaseDate: ''
+    releaseDate: '',
+    availableQuantity: 0
   });
+
+  useEffect(() => {
+    if (!user || user.role !== 'admin') {
+      navigate('/');
+      return;
+    }
+    fetchMiniaturas();
+  }, [user, navigate]);
+
+  const fetchMiniaturas = async () => {
+    try {
+      const res = await api.get('/api/miniaturas-base');
+      setMiniaturas(res.data);
+    } catch (err) {
+      console.error('Erro ao buscar miniaturas:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleShowStatusModal = (miniatura) => {
     setSelectedMiniaturaForStatus(miniatura);
@@ -57,25 +77,6 @@ export function MiniaturasBasePage() {
     } catch (err) {
       console.error('Erro ao atualizar status:', err);
       alert('❌ Erro ao atualizar status');
-    }
-  };
-
-  useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      navigate('/');
-      return;
-    }
-    fetchMiniaturas();
-  }, [user, navigate]);
-
-  const fetchMiniaturas = async () => {
-    try {
-      const res = await api.get('/api/miniaturas-base');
-      setMiniaturas(res.data);
-    } catch (err) {
-      console.error('Erro ao buscar miniaturas:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
