@@ -112,7 +112,8 @@ model ReadyStock {
   name            String
   brand           String?
   quantity        Int       @default(1)
-  price           Float     @default(0)
+  cost            Float     @default(0)
+  profitMargin    Float     @default(0)
   notes           String?
   addedDate       DateTime  @default(now())
   updatedDate     DateTime  @updatedAt
