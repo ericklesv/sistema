@@ -130,6 +130,9 @@ exports.sendToClientGarage = async (req, res) => {
     
     console.log('🖼️ Photo URL:', photoUrl);
 
+    // Calcular o preço final com a margem de lucro
+    const finalPrice = stockItem.cost * (1 + stockItem.profitMargin / 100);
+
     // Criar a miniatura na garagem do cliente
     const garage = await prisma.garage.create({
       data: {
@@ -137,8 +140,8 @@ exports.sendToClientGarage = async (req, res) => {
         name: stockItem.name,
         description: stockItem.notes || `Miniatura: ${stockItem.brand || 'N/A'}`,
         photoUrl: photoUrl,
-        totalValue: stockItem.price,
-        paidValue: stockItem.price,
+        totalValue: finalPrice,
+        paidValue: finalPrice,
         deliveryDate: new Date(),
         status: 'completed'
       }
