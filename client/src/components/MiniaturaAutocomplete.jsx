@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 
 export function MiniaturaAutocomplete({ value, onChange, onSelectMiniatura, placeholder = "Pesquisar miniatura..." }) {
   const [suggestions, setSuggestions] = useState([]);
