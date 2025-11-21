@@ -531,7 +531,7 @@ export function ReadyStockPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="Digite o nome ou email do cliente..."
+                  placeholder="Digite o nome, email ou WhatsApp do cliente..."
                   value={clientSearchInput}
                   onChange={(e) => setClientSearchInput(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -542,7 +542,8 @@ export function ReadyStockPage() {
                     {clients
                       .filter(c =>
                         c.username.toLowerCase().includes(clientSearchInput.toLowerCase()) ||
-                        c.email.toLowerCase().includes(clientSearchInput.toLowerCase())
+                        c.email.toLowerCase().includes(clientSearchInput.toLowerCase()) ||
+                        (c.whatsapp && c.whatsapp.includes(clientSearchInput.replace(/\D/g, '')))
                       )
                       .map(client => (
                         <button
@@ -560,12 +561,18 @@ export function ReadyStockPage() {
                           <div className="text-sm text-gray-600 dark:text-gray-400">
                             {client.email}
                           </div>
+                          {client.whatsapp && (
+                            <div className="text-sm text-green-600 dark:text-green-400">
+                              📱 {client.whatsapp}
+                            </div>
+                          )}
                         </button>
                       ))}
                     
                     {clients.filter(c =>
                       c.username.toLowerCase().includes(clientSearchInput.toLowerCase()) ||
-                      c.email.toLowerCase().includes(clientSearchInput.toLowerCase())
+                      c.email.toLowerCase().includes(clientSearchInput.toLowerCase()) ||
+                      (c.whatsapp && c.whatsapp.includes(clientSearchInput.replace(/\D/g, '')))
                     ).length === 0 && (
                       <div className="px-4 py-3 text-gray-500 dark:text-gray-400 text-center">
                         Nenhum cliente encontrado
