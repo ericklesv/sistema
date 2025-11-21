@@ -18,9 +18,9 @@ exports.getAllStock = async (req, res) => {
 
 // Adicionar item ao estoque pronto
 exports.addStockItem = async (req, res) => {
-  const { miniaturaBaseId, name, brand, quantity, price, notes } = req.body;
+  const { miniaturaBaseId, name, brand, quantity, cost, profitMargin, notes } = req.body;
 
-  console.log('📦 Adicionando item ao ReadyStock:', { miniaturaBaseId, name, brand, quantity, price, notes });
+  console.log('📦 Adicionando item ao ReadyStock:', { miniaturaBaseId, name, brand, quantity, cost, profitMargin, notes });
 
   if (!name) {
     return res.status(400).json({ error: 'Nome é obrigatório' });
@@ -33,7 +33,8 @@ exports.addStockItem = async (req, res) => {
         name,
         brand: brand || null,
         quantity: parseInt(quantity) || 1,
-        price: parseFloat(price) || 0,
+        cost: parseFloat(cost) || 0,
+        profitMargin: parseFloat(profitMargin) || 0,
         notes: notes || null
       },
       include: {
@@ -52,7 +53,7 @@ exports.addStockItem = async (req, res) => {
 // Atualizar item do estoque pronto
 exports.updateStockItem = async (req, res) => {
   const { id } = req.params;
-  const { miniaturaBaseId, name, brand, quantity, price, notes } = req.body;
+  const { miniaturaBaseId, name, brand, quantity, cost, profitMargin, notes } = req.body;
 
   try {
     const updateData = {};
@@ -60,7 +61,8 @@ exports.updateStockItem = async (req, res) => {
     if (name !== undefined) updateData.name = name;
     if (brand !== undefined) updateData.brand = brand;
     if (quantity !== undefined) updateData.quantity = parseInt(quantity);
-    if (price !== undefined) updateData.price = parseFloat(price);
+    if (cost !== undefined) updateData.cost = parseFloat(cost);
+    if (profitMargin !== undefined) updateData.profitMargin = parseFloat(profitMargin);
     if (notes !== undefined) updateData.notes = notes;
 
     const item = await prisma.readyStock.update({
