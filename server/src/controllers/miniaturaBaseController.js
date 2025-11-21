@@ -243,7 +243,7 @@ exports.getClientsWithMiniatura = async (req, res) => {
   }
 };
 
-// Adicionar miniatura do banco para garagem do cliente
+// Adicionar miniatura do banco para pré-venda ou garagem do cliente
 exports.addMiniaturaToClientPreSale = async (req, res) => {
   const { miniaturaId } = req.params;
   const { userId, totalValue, paidValue } = req.body;
@@ -263,19 +263,40 @@ exports.addMiniaturaToClientPreSale = async (req, res) => {
       return res.status(400).json({ error: 'Miniatura sem estoque disponível' });
     }
 
-    // Criar entrada na garagem do cliente
-    const garage = await prisma.garage.create({
-      data: {
-        userId: parseInt(userId),
-        name: miniatura.name,
-        description: miniatura.brand,
-        photoUrl: miniatura.photoUrl,
-        deliveryDate: miniatura.releaseDate,
-        totalValue: parseFloat(totalValue) || 0,
-        paidValue: parseFloat(paidValue) || 0,
-        status: 'delivered'
-      }
-    });
+    let result;
+    let destination;
+
+    // Se for pré-venda, adiciona em PreSale
+    if (miniatura.isPreOrder) {
+      result = await prisma.preSale.create({
+        data: {
+          userId: parseInt(userId),
+          name: miniatura.name,
+          description: miniatura.brand,
+          photoUrl: miniatura.photoUrl,
+          deliveryDate: miniatura.releaseDate,
+          totalValue: parseFloat(totalValue) || 0,
+          paidValue: parseFloat(paidValue) || 0,
+          situation: 'Esperando lançamento'
+        }
+      });
+      destination = 'pré-venda';
+    } else {
+      // Se já foi lançada, adiciona em Garage
+      result = await prisma.garage.create({
+        data: {
+          userId: parseInt(userId),
+          name: miniatura.name,
+          description: miniatura.brand,
+          photoUrl: miniatura.photoUrl,
+          deliveryDate: miniatura.releaseDate,
+          totalValue: parseFloat(totalValue) || 0,
+          paidValue: parseFloat(paidValue) || 0,
+          status: 'delivered'
+        }
+      });
+      destination = 'garagem';
+    }
 
     // Decrementar quantidade no estoque
     await prisma.miniaturaBase.update({
@@ -286,8 +307,9 @@ exports.addMiniaturaToClientPreSale = async (req, res) => {
     });
 
     res.json({
-      message: 'Miniatura adicionada à garagem do cliente com sucesso',
-      garage,
+      message: `Miniatura adicionada à ${destination} do cliente com sucesso`,
+      result,
+      destination,
       newStockQuantity: miniatura.stockQuantity - 1
     });
   } catch (err) {

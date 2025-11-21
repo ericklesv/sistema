@@ -54,6 +54,12 @@ export function Navbar() {
                     >
                       📦 Pronta Entrega
                     </Link>
+                    <Link
+                      to="/admin/pre-orders"
+                      className="bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white px-3 py-1 rounded font-semibold text-sm transition-all shadow-md hover:shadow-lg"
+                    >
+                      📋 Pré-Vendas
+                    </Link>
                   </>
                 )}
                 <button

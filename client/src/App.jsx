@@ -9,6 +9,7 @@ import { AdminPage } from './pages/AdminPage';
 import { MiniaturasBasePage } from './pages/MiniaturasBasePage';
 import { USAStockPage } from './pages/USAStockPage';
 import { ReadyStockPage } from './pages/ReadyStockPage';
+import { PreOrderPage } from './pages/PreOrderPage';
 import './index.css';
 
 function PrivateRoute({ children }) {
@@ -71,6 +72,14 @@ function AppContent() {
           element={
             <PrivateRoute>
               <ReadyStockPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/pre-orders"
+          element={
+            <PrivateRoute>
+              <PreOrderPage />
             </PrivateRoute>
           }
         />

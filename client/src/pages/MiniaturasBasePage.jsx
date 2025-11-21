@@ -158,7 +158,8 @@ export function MiniaturasBasePage() {
       ));
       
       setShowAddToClientModal(false);
-      alert(`✅ Miniatura adicionada à garagem do cliente!\n📦 Estoque restante: ${response.data.newStockQuantity}`);
+      const destination = response.data.destination === 'pré-venda' ? '📋 pré-venda' : '🚗 garagem';
+      alert(`✅ Miniatura adicionada à ${destination} do cliente!\n📦 Estoque restante: ${response.data.newStockQuantity}`);
     } catch (err) {
       console.error('❌ Erro ao adicionar:', err);
       console.error('📋 Detalhes:', err.response?.data);
@@ -479,18 +480,6 @@ export function MiniaturasBasePage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-center gap-2">
-                          <button
-                            onClick={() => handleShowAddToClientModal(miniatura)}
-                            disabled={(miniatura.stockQuantity || 0) <= 0}
-                            className={`px-3 py-1 rounded transition text-sm ${
-                              (miniatura.stockQuantity || 0) > 0
-                                ? 'bg-blue-500 hover:bg-blue-600 text-white cursor-pointer'
-                                : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50'
-                            }`}
-                            title={(miniatura.stockQuantity || 0) > 0 ? "Adicionar ao cliente" : "Sem estoque"}
-                          >
-                            👤➕
-                          </button>
                           <button
                             onClick={() => handleShowStatusModal(miniatura)}
                             className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded transition text-sm"
