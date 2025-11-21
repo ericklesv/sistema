@@ -71,21 +71,36 @@ export function MiniaturasBasePage() {
     e.preventDefault();
     const token = localStorage.getItem('token');
     
+    const updatePayload = {
+      isPreOrder: statusFormData.isPreOrder,
+      releaseDate: statusFormData.releaseDate || null,
+      stockQuantity: parseInt(statusFormData.stockQuantity) || 0
+    };
+    
+    console.log('📤 Enviando atualização:', updatePayload);
+    console.log('🆔 ID da miniatura:', selectedMiniaturaForStatus.id);
+    
     try {
-      await api.put(`/api/miniaturas-base/${selectedMiniaturaForStatus.id}/status`, {
-        isPreOrder: statusFormData.isPreOrder,
-        releaseDate: statusFormData.releaseDate || null,
-        stockQuantity: parseInt(statusFormData.stockQuantity) || 0
-      }, {
+      const response = await api.put(`/api/miniaturas-base/${selectedMiniaturaForStatus.id}/status`, updatePayload, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('✅ Resposta do servidor:', response.data);
 
-      await fetchMiniaturas();
+      // Atualização otimista da UI
+      setMiniaturas(prev => prev.map(m => 
+        m.id === selectedMiniaturaForStatus.id 
+          ? { ...m, ...response.data }
+          : m
+      ));
+
       setShowStatusModal(false);
-      alert('✅ Status atualizado com sucesso!');
+      alert('✅ Status e estoque atualizados com sucesso!');
     } catch (err) {
-      console.error('Erro ao atualizar status:', err);
-      alert('❌ Erro ao atualizar status');
+      console.error('❌ Erro completo:', err);
+      console.error('📋 Response:', err.response?.data);
+      console.error('🔢 Status:', err.response?.status);
+      alert(`❌ Erro ao atualizar: ${err.response?.data?.error || err.message}`);
     }
   };
 
