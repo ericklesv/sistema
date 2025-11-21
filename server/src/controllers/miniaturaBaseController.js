@@ -76,10 +76,6 @@ exports.updateMiniaturaBase = async (req, res) => {
   const { id } = req.params;
   const { name, brand, photoUrl, isPreOrder, releaseDate, availableQuantity } = req.body;
 
-  console.log('=== UPDATE MINIATURA ===');
-  console.log('ID:', id);
-  console.log('Body recebido:', req.body);
-
   try {
     const updateData = {};
     if (name !== undefined) updateData.name = name;
@@ -89,14 +85,11 @@ exports.updateMiniaturaBase = async (req, res) => {
     if (releaseDate !== undefined) updateData.releaseDate = releaseDate ? new Date(releaseDate) : null;
     if (availableQuantity !== undefined) updateData.availableQuantity = parseInt(availableQuantity);
 
-    console.log('Dados para atualizar:', updateData);
-
     const miniatura = await prisma.miniaturaBase.update({
       where: { id: parseInt(id) },
       data: updateData
     });
 
-    console.log('Miniatura atualizada:', miniatura);
     res.json(miniatura);
   } catch (err) {
     console.error('Erro ao atualizar miniatura:', err);

@@ -198,7 +198,6 @@ export function MiniaturasBasePage() {
     const token = localStorage.getItem('token');
     try {
       if (editingId) {
-        console.log('Enviando dados:', formData);
         await api.put(`/api/miniaturas-base/${editingId}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
