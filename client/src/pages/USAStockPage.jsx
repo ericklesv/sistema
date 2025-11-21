@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { MiniaturaAutocomplete } from '../components/MiniaturaAutocomplete';
+import DateInput from '../components/DateInput';
 
 export function USAStockPage() {
   const { user } = useContext(AuthContext);
@@ -728,19 +729,13 @@ export function USAStockPage() {
               </h2>
 
               <form onSubmit={handleSubmitShipment} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Data de Envio *
-                  </label>
-                  <input
-                    type="date"
-                    name="shippingDate"
-                    value={shipmentForm.shippingDate}
-                    onChange={handleShipmentInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
+                <DateInput
+                  label="Data de Envio"
+                  value={shipmentForm.shippingDate}
+                  onChange={(e) => setShipmentForm({ ...shipmentForm, shippingDate: e.target.value })}
+                  placeholder="DD/MM/AAAA"
+                  required
+                />
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">

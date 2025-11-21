@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { MiniaturaAutocomplete } from '../components/MiniaturaAutocomplete';
+import DateInput from '../components/DateInput';
 
 export function AdminPage() {
   const { user } = useContext(AuthContext);
@@ -485,29 +486,19 @@ export function AdminPage() {
 
                     <div>
                       {activeTab === 'pre-sales' ? (
-                        <>
-                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            Data de Entrega
-                          </label>
-                          <input
-                            type="date"
-                            value={formData.deliveryDate}
-                            onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </>
+                        <DateInput
+                          label="Data de Entrega"
+                          value={formData.deliveryDate}
+                          onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
+                          placeholder="DD/MM/AAAA"
+                        />
                       ) : (
-                        <>
-                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            Data de Entrada
-                          </label>
-                          <input
-                            type="date"
-                            value={formData.entranceDate}
-                            onChange={(e) => setFormData({ ...formData, entranceDate: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </>
+                        <DateInput
+                          label="Data de Entrada"
+                          value={formData.entranceDate}
+                          onChange={(e) => setFormData({ ...formData, entranceDate: e.target.value })}
+                          placeholder="DD/MM/AAAA"
+                        />
                       )}
                     </div>
 
