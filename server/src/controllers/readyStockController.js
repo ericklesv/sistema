@@ -149,12 +149,19 @@ exports.sendToClientGarage = async (req, res) => {
 
     console.log('✅ Criado na garagem:', garage);
 
-    // Deletar do estoque pronto
-    await prisma.readyStock.delete({
-      where: { id: parseInt(readyStockId) }
-    });
-
-    console.log('🗑️ Deletado do estoque pronto');
+    // Decrementar a quantidade do estoque ou deletar se for a última unidade
+    if (stockItem.quantity > 1) {
+      await prisma.readyStock.update({
+        where: { id: parseInt(readyStockId) },
+        data: { quantity: stockItem.quantity - 1 }
+      });
+      console.log('📉 Quantidade decrementada:', stockItem.quantity - 1);
+    } else {
+      await prisma.readyStock.delete({
+        where: { id: parseInt(readyStockId) }
+      });
+      console.log('🗑️ Última unidade - item deletado do estoque');
+    }
 
     res.json({
       message: 'Miniatura enviada para garagem do cliente com sucesso',
