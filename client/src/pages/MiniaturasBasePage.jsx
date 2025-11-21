@@ -139,8 +139,9 @@ export function MiniaturasBasePage() {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const finalValue = type === 'number' ? (value === '' ? 0 : parseInt(value)) : value;
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
   };
 
   const handlePhotoChange = (e) => {
@@ -197,6 +198,7 @@ export function MiniaturasBasePage() {
     const token = localStorage.getItem('token');
     try {
       if (editingId) {
+        console.log('Enviando dados:', formData);
         await api.put(`/api/miniaturas-base/${editingId}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
