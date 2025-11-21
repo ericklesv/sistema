@@ -25,7 +25,8 @@ export function MiniaturasBasePage() {
   const [selectedMiniaturaForStatus, setSelectedMiniaturaForStatus] = useState(null);
   const [statusFormData, setStatusFormData] = useState({
     isPreOrder: true,
-    releaseDate: ''
+    releaseDate: '',
+    stockQuantity: 0
   });
   const [filterStatus, setFilterStatus] = useState('all'); // all, pre-order, launched
   const [showAddToClientModal, setShowAddToClientModal] = useState(false);
@@ -60,7 +61,8 @@ export function MiniaturasBasePage() {
     setSelectedMiniaturaForStatus(miniatura);
     setStatusFormData({
       isPreOrder: miniatura.isPreOrder,
-      releaseDate: miniatura.releaseDate ? new Date(miniatura.releaseDate).toISOString().split('T')[0] : ''
+      releaseDate: miniatura.releaseDate ? new Date(miniatura.releaseDate).toISOString().split('T')[0] : '',
+      stockQuantity: miniatura.stockQuantity || 0
     });
     setShowStatusModal(true);
   };
@@ -72,7 +74,8 @@ export function MiniaturasBasePage() {
     try {
       await api.put(`/api/miniaturas-base/${selectedMiniaturaForStatus.id}/status`, {
         isPreOrder: statusFormData.isPreOrder,
-        releaseDate: statusFormData.releaseDate || null
+        releaseDate: statusFormData.releaseDate || null,
+        stockQuantity: parseInt(statusFormData.stockQuantity) || 0
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -371,6 +374,9 @@ export function MiniaturasBasePage() {
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                       Status
                     </th>
+                    <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      📦 Estoque
+                    </th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                       Foto
                     </th>
@@ -415,6 +421,15 @@ export function MiniaturasBasePage() {
                             {new Date(miniatura.releaseDate).toLocaleDateString('pt-BR')}
                           </div>
                         )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                          (miniatura.stockQuantity || 0) > 0
+                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {miniatura.stockQuantity || 0}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         {miniatura.photoUrl ? (
@@ -695,6 +710,22 @@ export function MiniaturasBasePage() {
                     />
                   </div>
 
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      📦 Quantidade em Estoque
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={statusFormData.stockQuantity}
+                      onChange={(e) => setStatusFormData({ ...statusFormData, stockQuantity: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Quantidade de miniaturas disponíveis em estoque
+                    </p>
+                  </div>
 
                 </div>
 

@@ -102,13 +102,18 @@ exports.updateMiniaturaBase = async (req, res) => {
 // Atualizar status de pré-venda
 exports.updatePreOrderStatus = async (req, res) => {
   const { id } = req.params;
-  const { isPreOrder, releaseDate } = req.body;
+  const { isPreOrder, releaseDate, stockQuantity } = req.body;
 
   try {
     const updateData = {
       isPreOrder: isPreOrder === true,
       releaseDate: releaseDate ? new Date(releaseDate) : null
     };
+    
+    if (stockQuantity !== undefined) {
+      const parsed = parseInt(stockQuantity);
+      updateData.stockQuantity = Number.isNaN(parsed) ? 0 : parsed;
+    }
 
     const miniatura = await prisma.miniaturaBase.update({
       where: { id: parseInt(id) },
