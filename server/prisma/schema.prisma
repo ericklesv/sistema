@@ -100,7 +100,6 @@ model MiniaturaBase {
   photoUrl          String?
   isPreOrder        Boolean   @default(false)
   releaseDate       DateTime?
-  availableQuantity Int       @default(0)
   createdAt         DateTime  @default(now())
 
   usaStock      USAStock[]

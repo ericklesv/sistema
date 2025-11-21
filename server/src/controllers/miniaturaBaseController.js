@@ -74,7 +74,7 @@ exports.createMiniaturaBase = async (req, res) => {
 // Atualizar miniatura base
 exports.updateMiniaturaBase = async (req, res) => {
   const { id } = req.params;
-  const { name, brand, photoUrl, isPreOrder, releaseDate, availableQuantity } = req.body;
+  const { name, brand, photoUrl, isPreOrder, releaseDate } = req.body;
 
   try {
     const updateData = {};
@@ -83,10 +83,6 @@ exports.updateMiniaturaBase = async (req, res) => {
     if (photoUrl !== undefined) updateData.photoUrl = photoUrl;
     if (isPreOrder !== undefined) updateData.isPreOrder = isPreOrder;
     if (releaseDate !== undefined) updateData.releaseDate = releaseDate ? new Date(releaseDate) : null;
-    if (availableQuantity !== undefined) {
-      const parsed = parseInt(availableQuantity);
-      updateData.availableQuantity = Number.isNaN(parsed) ? 0 : parsed;
-    }
 
     const miniatura = await prisma.miniaturaBase.update({
       where: { id: parseInt(id) },
@@ -106,17 +102,13 @@ exports.updateMiniaturaBase = async (req, res) => {
 // Atualizar status de pré-venda
 exports.updatePreOrderStatus = async (req, res) => {
   const { id } = req.params;
-  const { isPreOrder, releaseDate, availableQuantity } = req.body;
+  const { isPreOrder, releaseDate } = req.body;
 
   try {
     const updateData = {
       isPreOrder: isPreOrder === true,
       releaseDate: releaseDate ? new Date(releaseDate) : null
     };
-    
-    if (availableQuantity !== undefined) {
-      updateData.availableQuantity = parseInt(availableQuantity) || 0;
-    }
 
     const miniatura = await prisma.miniaturaBase.update({
       where: { id: parseInt(id) },

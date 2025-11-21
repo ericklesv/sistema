@@ -13,8 +13,7 @@ export function MiniaturasBasePage() {
   const [formData, setFormData] = useState({
     name: '',
     brand: '',
-    photoUrl: '',
-    availableQuantity: 0
+    photoUrl: ''
   });
   const [photoPreview, setPhotoPreview] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -26,8 +25,7 @@ export function MiniaturasBasePage() {
   const [selectedMiniaturaForStatus, setSelectedMiniaturaForStatus] = useState(null);
   const [statusFormData, setStatusFormData] = useState({
     isPreOrder: true,
-    releaseDate: '',
-    availableQuantity: 0
+    releaseDate: ''
   });
   const [filterStatus, setFilterStatus] = useState('all'); // all, pre-order, launched
   const [showAddToClientModal, setShowAddToClientModal] = useState(false);
@@ -38,7 +36,6 @@ export function MiniaturasBasePage() {
     paidValue: ''
   });
   const [users, setUsers] = useState([]);
-  const [clientSearchTerm, setClientSearchTerm] = useState('');
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -63,8 +60,7 @@ export function MiniaturasBasePage() {
     setSelectedMiniaturaForStatus(miniatura);
     setStatusFormData({
       isPreOrder: miniatura.isPreOrder,
-      releaseDate: miniatura.releaseDate ? new Date(miniatura.releaseDate).toISOString().split('T')[0] : '',
-      availableQuantity: miniatura.availableQuantity || 0
+      releaseDate: miniatura.releaseDate ? new Date(miniatura.releaseDate).toISOString().split('T')[0] : ''
     });
     setShowStatusModal(true);
   };
@@ -76,8 +72,7 @@ export function MiniaturasBasePage() {
     try {
       await api.put(`/api/miniaturas-base/${selectedMiniaturaForStatus.id}/status`, {
         isPreOrder: statusFormData.isPreOrder,
-        releaseDate: statusFormData.releaseDate || null,
-        availableQuantity: parseInt(statusFormData.availableQuantity) || 0
+        releaseDate: statusFormData.releaseDate || null
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -92,11 +87,6 @@ export function MiniaturasBasePage() {
   };
 
   const handleShowAddToClientModal = async (miniatura) => {
-    if (miniatura.availableQuantity <= 0) {
-      alert('⚠️ Esta miniatura não tem quantidade disponível');
-      return;
-    }
-    
     setSelectedMiniaturaForClient(miniatura);
     setAddToClientData({ userId: '', totalValue: '', paidValue: '' });
     
@@ -139,9 +129,8 @@ export function MiniaturasBasePage() {
   };
 
   const handleInputChange = (e) => {
-    const { name, value, type } = e.target;
-    const finalValue = type === 'number' ? (value === '' ? 0 : parseInt(value)) : value;
-    setFormData(prev => ({ ...prev, [name]: finalValue }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handlePhotoChange = (e) => {
@@ -198,17 +187,9 @@ export function MiniaturasBasePage() {
     const token = localStorage.getItem('token');
     try {
       if (editingId) {
-        const dataToSend = {
-          ...formData,
-          availableQuantity: parseInt(formData.availableQuantity) || 0
-        };
-
-        const response = await api.put(`/api/miniaturas-base/${editingId}`, dataToSend, {
+        await api.put(`/api/miniaturas-base/${editingId}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
-
-        // Atualiza estado local sem depender de refetch imediato
-        setMiniaturas(prev => prev.map(m => m.id === editingId ? response.data : m));
         alert('Miniatura atualizada com sucesso!');
       } else {
         const res = await api.post('/api/miniaturas-base', formData, {
@@ -217,26 +198,13 @@ export function MiniaturasBasePage() {
         setMiniaturas([...miniaturas, res.data]);
         alert(`✅ Miniatura criada com código: ${res.data.code}`);
       }
-
+      
       resetForm();
       setShowAddModal(false);
-      // Refetch para garantir sincronização (assíncrono)
       fetchMiniaturas();
     } catch (err) {
       console.error('Erro ao salvar miniatura:', err);
-      if (err.response) {
-        if (err.response.status === 403) {
-          alert('Acesso negado: sua sessão não tem permissão (admin obrigatório).');
-        } else if (err.response.status === 401) {
-          alert('Sessão expirada. Faça login novamente.');
-        } else if (err.response.status === 404) {
-          alert('Miniatura não encontrada.');
-        } else {
-          alert('Erro ao salvar miniatura.');
-        }
-      } else {
-        alert('Falha de conexão ao salvar miniatura.');
-      }
+      alert('Erro ao salvar miniatura');
     }
   };
 
@@ -245,8 +213,7 @@ export function MiniaturasBasePage() {
     setFormData({
       name: miniatura.name,
       brand: miniatura.brand,
-      photoUrl: miniatura.photoUrl || '',
-      availableQuantity: miniatura.availableQuantity || 0
+      photoUrl: miniatura.photoUrl || ''
     });
     if (miniatura.photoUrl) {
       setPhotoPreview(miniatura.photoUrl);
@@ -273,7 +240,7 @@ export function MiniaturasBasePage() {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', brand: '', photoUrl: '', availableQuantity: 0 });
+    setFormData({ name: '', brand: '', photoUrl: '' });
     setPhotoPreview(null);
     setEditingId(null);
   };
@@ -404,9 +371,6 @@ export function MiniaturasBasePage() {
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      Qtd Disp.
-                    </th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                       Foto
                     </th>
@@ -452,15 +416,6 @@ export function MiniaturasBasePage() {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
-                          (miniatura.availableQuantity || 0) > 0
-                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                        }`}>
-                          {miniatura.availableQuantity || 0}
-                        </span>
-                      </td>
                       <td className="px-6 py-4">
                         {miniatura.photoUrl ? (
                           <img
@@ -478,7 +433,6 @@ export function MiniaturasBasePage() {
                             onClick={() => handleShowAddToClientModal(miniatura)}
                             className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition text-sm"
                             title="Adicionar ao cliente"
-                            disabled={miniatura.availableQuantity <= 0}
                           >
                             👤➕
                           </button>
@@ -583,23 +537,6 @@ export function MiniaturasBasePage() {
                     </div>
                   )}
                 </div>
-
-                {/* Quantidade Disponível (apenas para edição) */}
-                {editingId && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      📦 Quantidade Disponível
-                    </label>
-                    <input
-                      type="number"
-                      name="availableQuantity"
-                      min="0"
-                      value={formData.availableQuantity}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                )}
 
                 {/* Botões */}
                 <div className="flex gap-3 pt-4">
@@ -758,19 +695,7 @@ export function MiniaturasBasePage() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Quantidade Disponível
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={statusFormData.availableQuantity || 0}
-                      onChange={(e) => setStatusFormData({ ...statusFormData, availableQuantity: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
-                      placeholder="0"
-                    />
-                  </div>
+
                 </div>
 
                 <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -827,13 +752,6 @@ export function MiniaturasBasePage() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Cliente *
                     </label>
-                    <input
-                      type="text"
-                      placeholder="🔍 Buscar cliente por nome, email ou telefone..."
-                      value={clientSearchTerm}
-                      onChange={(e) => setClientSearchTerm(e.target.value)}
-                      className="w-full px-3 py-2 mb-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    />
                     <select
                       value={addToClientData.userId}
                       onChange={(e) => setAddToClientData({ ...addToClientData, userId: e.target.value })}
@@ -841,19 +759,11 @@ export function MiniaturasBasePage() {
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Selecione um cliente</option>
-                      {users
-                        .filter(u => {
-                          const search = clientSearchTerm.toLowerCase();
-                          return u.username.toLowerCase().includes(search) ||
-                                 u.email.toLowerCase().includes(search) ||
-                                 (u.whatsapp && u.whatsapp.includes(search));
-                        })
-                        .map(user => (
-                          <option key={user.id} value={user.id}>
-                            {user.username} ({user.email}) {user.whatsapp ? `- ${user.whatsapp}` : ''}
-                          </option>
-                        ))
-                      }
+                      {users.map(user => (
+                        <option key={user.id} value={user.id}>
+                          {user.username} ({user.email})
+                        </option>
+                      ))}
                     </select>
                   </div>
 
