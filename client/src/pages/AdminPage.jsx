@@ -18,6 +18,7 @@ export function AdminPage() {
   const [activeTab, setActiveTab] = useState('pre-sales');
   const [formData, setFormData] = useState({
     name: '',
+    brand: '',
     description: '',
     deliveryDate: '',
     totalValue: '',
@@ -97,16 +98,47 @@ export function AdminPage() {
 
       // Se não tem miniatura selecionada E tem foto, criar nova miniatura no banco
       if (!selectedMiniatura && formData.photoFile) {
-        const reader = new FileReader();
-        photoUrl = await new Promise((resolve) => {
-          reader.onloadend = () => resolve(reader.result);
+        // Comprimir imagem antes de enviar
+        const compressed = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const MAX_WIDTH = 800;
+              const MAX_HEIGHT = 600;
+              let width = img.width;
+              let height = img.height;
+
+              if (width > height) {
+                if (width > MAX_WIDTH) {
+                  height *= MAX_WIDTH / width;
+                  width = MAX_WIDTH;
+                }
+              } else {
+                if (height > MAX_HEIGHT) {
+                  width *= MAX_HEIGHT / height;
+                  height = MAX_HEIGHT;
+                }
+              }
+
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+            img.src = e.target.result;
+          };
           reader.readAsDataURL(formData.photoFile);
         });
+
+        photoUrl = compressed;
 
         // Criar miniatura no banco de dados
         const miniaturaData = {
           name: formData.name,
-          brand: formData.description,
+          brand: formData.brand || 'N/A',
           photoUrl: photoUrl
         };
         
@@ -124,17 +156,18 @@ export function AdminPage() {
       if (activeTab === 'pre-sales') {
         dataToSend.deliveryDate = formData.deliveryDate;
         dataToSend.totalValue = parseFloat(formData.totalValue) || 0;
-        dataToSend.paidValue = parseFloat(formData.paidValue) || 0;
+        dataToSend.paidValue = parseFloat(formData.paidValue) || parseFloat(formData.totalValue) || 0;
       } else {
         dataToSend.deliveryDate = formData.entranceDate;
-        dataToSend.totalValue = parseFloat(formData.stock) || 0;
-        dataToSend.paidValue = parseFloat(formData.paidValue) || 0;
+        const stockValue = parseFloat(formData.stock) || 0;
+        dataToSend.totalValue = stockValue;
+        dataToSend.paidValue = parseFloat(formData.paidValue) || stockValue;
       }
 
       await api.post(endpoint, dataToSend, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setFormData({ name: '', description: '', deliveryDate: '', totalValue: '', paidValue: '', entranceDate: '', stock: '', photoFile: null });
+      setFormData({ name: '', brand: '', description: '', deliveryDate: '', totalValue: '', paidValue: '', entranceDate: '', stock: '', photoFile: null });
       setSelectedMiniatura(null);
       setShowAddModal(false);
       await handleSelectUser(selectedUser);
@@ -488,12 +521,29 @@ export function AdminPage() {
                           setFormData({
                             ...formData,
                             name: miniatura.name,
+                            brand: miniatura.brand || '',
                             description: miniatura.brand || formData.description
                           });
                         }}
                         placeholder="Pesquisar miniatura no banco de dados..."
                       />
                     </div>
+
+                    {/* Marca - apenas se não tiver miniatura selecionada */}
+                    {!selectedMiniatura && (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                          Marca da Miniatura
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.brand}
+                          onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Ex: Hot Wheels, Matchbox, Tomica..."
+                        />
+                      </div>
+                    )}
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
