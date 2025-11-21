@@ -198,7 +198,13 @@ export function MiniaturasBasePage() {
     const token = localStorage.getItem('token');
     try {
       if (editingId) {
-        await api.put(`/api/miniaturas-base/${editingId}`, formData, {
+        // Garantir que availableQuantity é um número
+        const dataToSend = {
+          ...formData,
+          availableQuantity: parseInt(formData.availableQuantity) || 0
+        };
+        
+        await api.put(`/api/miniaturas-base/${editingId}`, dataToSend, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('Miniatura atualizada com sucesso!');
