@@ -59,4 +59,5 @@ app.get('/api/health', async (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   console.log('Database:', process.env.DATABASE_URL ? 'PostgreSQL (Production)' : 'Local');
+  console.log('✅ Rotas registradas:', app._router.stack.filter(r => r.route).map(r => Object.keys(r.route.methods)[0].toUpperCase() + ' ' + r.route.path).join(', '));
 });
