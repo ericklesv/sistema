@@ -21,6 +21,7 @@ router.get('/miniaturas-base/:id', miniaturaBaseController.getMiniaturaBaseById)
 router.post('/miniaturas-base', authenticateToken, isAdmin, miniaturaBaseController.createMiniaturaBase);
 router.put('/miniaturas-base/:id', authenticateToken, isAdmin, miniaturaBaseController.updateMiniaturaBase);
 router.put('/miniaturas-base/:id/status', authenticateToken, isAdmin, miniaturaBaseController.updatePreOrderStatus);
+router.post('/miniaturas-base/:miniaturaId/add-to-client', authenticateToken, isAdmin, miniaturaBaseController.addMiniaturaToClientPreSale);
 router.delete('/miniaturas-base/:id', authenticateToken, isAdmin, miniaturaBaseController.deleteMiniaturaBase);
 
 module.exports = router;

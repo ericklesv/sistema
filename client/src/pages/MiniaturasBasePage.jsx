@@ -28,6 +28,15 @@ export function MiniaturasBasePage() {
     releaseDate: '',
     availableQuantity: 0
   });
+  const [filterStatus, setFilterStatus] = useState('all'); // all, pre-order, launched
+  const [showAddToClientModal, setShowAddToClientModal] = useState(false);
+  const [selectedMiniaturaForClient, setSelectedMiniaturaForClient] = useState(null);
+  const [addToClientData, setAddToClientData] = useState({
+    userId: '',
+    totalValue: '',
+    paidValue: ''
+  });
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -77,6 +86,53 @@ export function MiniaturasBasePage() {
     } catch (err) {
       console.error('Erro ao atualizar status:', err);
       alert('❌ Erro ao atualizar status');
+    }
+  };
+
+  const handleShowAddToClientModal = async (miniatura) => {
+    if (miniatura.availableQuantity <= 0) {
+      alert('⚠️ Esta miniatura não tem quantidade disponível');
+      return;
+    }
+    
+    setSelectedMiniaturaForClient(miniatura);
+    setAddToClientData({ userId: '', totalValue: '', paidValue: '' });
+    
+    // Buscar lista de usuários
+    const token = localStorage.getItem('token');
+    try {
+      const res = await api.get('/api/admin/users', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUsers(res.data.filter(u => u.role === 'client'));
+      setShowAddToClientModal(true);
+    } catch (err) {
+      console.error('Erro ao buscar usuários:', err);
+      alert('Erro ao buscar clientes');
+    }
+  };
+
+  const handleAddToClient = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    
+    if (!addToClientData.userId) {
+      alert('Selecione um cliente');
+      return;
+    }
+    
+    try {
+      await api.post(`/api/miniaturas-base/${selectedMiniaturaForClient.id}/add-to-client`, 
+        addToClientData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      await fetchMiniaturas();
+      setShowAddToClientModal(false);
+      alert('✅ Miniatura adicionada ao cliente com sucesso!');
+    } catch (err) {
+      console.error('Erro ao adicionar:', err);
+      alert('❌ ' + (err.response?.data?.error || 'Erro ao adicionar miniatura'));
     }
   };
 
@@ -215,11 +271,17 @@ export function MiniaturasBasePage() {
     }
   };
 
-  const filteredMiniaturas = miniaturas.filter(m =>
-    m.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.brand.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMiniaturas = miniaturas.filter(m => {
+    const matchesSearch = m.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.brand.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = filterStatus === 'all' || 
+      (filterStatus === 'pre-order' && m.isPreOrder) ||
+      (filterStatus === 'launched' && !m.isPreOrder);
+    
+    return matchesSearch && matchesStatus;
+  });
 
   if (loading) {
     return <div className="p-8 text-center">Carregando...</div>;
@@ -257,6 +319,40 @@ export function MiniaturasBasePage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
+        </div>
+
+        {/* Filtros de Status */}
+        <div className="mb-6 flex gap-3">
+          <button
+            onClick={() => setFilterStatus('all')}
+            className={`px-6 py-2 rounded-lg font-semibold transition ${
+              filterStatus === 'all'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600'
+            }`}
+          >
+            📦 Todas ({miniaturas.length})
+          </button>
+          <button
+            onClick={() => setFilterStatus('pre-order')}
+            className={`px-6 py-2 rounded-lg font-semibold transition ${
+              filterStatus === 'pre-order'
+                ? 'bg-yellow-600 text-white'
+                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600'
+            }`}
+          >
+            🔜 Pré-Vendas ({miniaturas.filter(m => m.isPreOrder).length})
+          </button>
+          <button
+            onClick={() => setFilterStatus('launched')}
+            className={`px-6 py-2 rounded-lg font-semibold transition ${
+              filterStatus === 'launched'
+                ? 'bg-green-600 text-white'
+                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600'
+            }`}
+          >
+            ✅ Lançadas ({miniaturas.filter(m => !m.isPreOrder).length})
+          </button>
         </div>
 
         {/* Tabela de Miniaturas */}
@@ -353,6 +449,14 @@ export function MiniaturasBasePage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() => handleShowAddToClientModal(miniatura)}
+                            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition text-sm"
+                            title="Adicionar ao cliente"
+                            disabled={miniatura.availableQuantity <= 0}
+                          >
+                            👤➕
+                          </button>
                           <button
                             onClick={() => handleShowStatusModal(miniatura)}
                             className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded transition text-sm"
@@ -640,6 +744,106 @@ export function MiniaturasBasePage() {
                     className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium"
                   >
                     Salvar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Adicionar ao Cliente */}
+        {showAddToClientModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-2xl">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  👤 Adicionar ao Cliente
+                </h2>
+                <button
+                  onClick={() => setShowAddToClientModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {selectedMiniaturaForClient?.name}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">
+                  {selectedMiniaturaForClient?.brand} • Código: {selectedMiniaturaForClient?.code}
+                </div>
+                <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                  📦 Disponível: {selectedMiniaturaForClient?.availableQuantity}
+                </div>
+              </div>
+
+              <form onSubmit={handleAddToClient}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Cliente *
+                    </label>
+                    <select
+                      value={addToClientData.userId}
+                      onChange={(e) => setAddToClientData({ ...addToClientData, userId: e.target.value })}
+                      required
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Selecione um cliente</option>
+                      {users.map(user => (
+                        <option key={user.id} value={user.id}>
+                          {user.username} ({user.email})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Valor Total (R$)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={addToClientData.totalValue}
+                      onChange={(e) => setAddToClientData({ ...addToClientData, totalValue: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Valor Pago (R$)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={addToClientData.paidValue}
+                      onChange={(e) => setAddToClientData({ ...addToClientData, paidValue: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddToClientModal(false)}
+                    className="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition font-medium"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                  >
+                    Adicionar
                   </button>
                 </div>
               </form>

@@ -241,3 +241,55 @@ exports.getClientsWithMiniatura = async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar clientes' });
   }
 };
+
+// Adicionar miniatura do banco para pré-venda do cliente
+exports.addMiniaturaToClientPreSale = async (req, res) => {
+  const { miniaturaId } = req.params;
+  const { userId, totalValue, paidValue } = req.body;
+
+  try {
+    // Buscar a miniatura
+    const miniatura = await prisma.miniaturaBase.findUnique({
+      where: { id: parseInt(miniaturaId) }
+    });
+
+    if (!miniatura) {
+      return res.status(404).json({ error: 'Miniatura não encontrada' });
+    }
+
+    // Verificar se há quantidade disponível
+    if (miniatura.availableQuantity <= 0) {
+      return res.status(400).json({ error: 'Miniatura sem estoque disponível' });
+    }
+
+    // Criar pré-venda para o cliente
+    const preSale = await prisma.preSale.create({
+      data: {
+        userId: parseInt(userId),
+        name: miniatura.name,
+        description: miniatura.brand,
+        photoUrl: miniatura.photoUrl,
+        deliveryDate: miniatura.releaseDate,
+        totalValue: parseFloat(totalValue) || 0,
+        paidValue: parseFloat(paidValue) || 0,
+        situation: miniatura.isPreOrder ? 'Esperando lançamento' : 'Disponível'
+      }
+    });
+
+    // Decrementar quantidade disponível
+    await prisma.miniaturaBase.update({
+      where: { id: parseInt(miniaturaId) },
+      data: {
+        availableQuantity: miniatura.availableQuantity - 1
+      }
+    });
+
+    res.json({
+      message: 'Miniatura adicionada ao cliente com sucesso',
+      preSale
+    });
+  } catch (err) {
+    console.error('Erro ao adicionar miniatura ao cliente:', err);
+    res.status(500).json({ error: 'Erro ao adicionar miniatura ao cliente' });
+  }
+};
