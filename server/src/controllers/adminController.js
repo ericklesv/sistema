@@ -222,3 +222,47 @@ exports.deleteGarageAdmin = async (req, res) => {
     res.status(500).json({ error: 'Erro ao deletar' });
   }
 };
+
+// Transferir pré-venda para garagem (admin)
+exports.transferPreSaleToGarage = async (req, res) => {
+  const { preSaleId } = req.params;
+
+  try {
+    // Buscar a pré-venda
+    const preSale = await prisma.preSale.findUnique({
+      where: { id: parseInt(preSaleId) },
+      include: { user: true }
+    });
+
+    if (!preSale) {
+      return res.status(404).json({ error: 'Pré-venda não encontrada' });
+    }
+
+    // Criar na garagem com os mesmos dados
+    const garage = await prisma.garage.create({
+      data: {
+        userId: preSale.userId,
+        name: preSale.name,
+        description: preSale.description,
+        photoUrl: preSale.photoUrl,
+        deliveryDate: preSale.deliveryDate || new Date(),
+        status: 'delivered',
+        totalValue: preSale.totalValue,
+        paidValue: preSale.paidValue
+      }
+    });
+
+    // Deletar a pré-venda
+    await prisma.preSale.delete({
+      where: { id: parseInt(preSaleId) }
+    });
+
+    res.json({ 
+      message: 'Miniatura transferida para garagem com sucesso',
+      garage 
+    });
+  } catch (err) {
+    console.error('Erro ao transferir:', err);
+    res.status(500).json({ error: 'Erro ao transferir miniatura' });
+  }
+};

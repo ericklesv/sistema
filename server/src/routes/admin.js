@@ -25,6 +25,7 @@ router.get('/users/:userId/pre-sales', adminController.getUserPreSales);
 router.post('/users/:userId/pre-sales', adminController.addPreSaleToUser);
 router.put('/pre-sales/:id', adminController.updatePreSale);
 router.delete('/pre-sales/:id', adminController.deletePreSaleAdmin);
+router.post('/pre-sales/:preSaleId/transfer-to-garage', adminController.transferPreSaleToGarage);
 
 // Garagem
 router.get('/users/:userId/garage', adminController.getUserGarage);

@@ -15,9 +15,9 @@ async function createAdmin() {
     await client.connect();
     console.log('🔗 Conectado ao PostgreSQL\n');
 
-    const email = 'adminteste@gmail.com';
-    const password = 'teste123';
-    const username = 'adminteste';
+    const email = 'ericklesvn@gmail.com';
+    const password = 'montagem95';
+    const username = 'erickles';
     
     const hashedPassword = await bcrypt.hash(password, 10);
 

@@ -18,9 +18,9 @@ exports.getAllStock = async (req, res) => {
 
 // Adicionar item ao estoque pronto
 exports.addStockItem = async (req, res) => {
-  const { miniaturaBaseId, name, brand, quantity, cost, profitMargin, notes } = req.body;
+  const { miniaturaBaseId, name, brand, quantity, price, notes } = req.body;
 
-  console.log('📦 Adicionando item ao ReadyStock:', { miniaturaBaseId, name, brand, quantity, cost, profitMargin, notes });
+  console.log('📦 Adicionando item ao ReadyStock:', { miniaturaBaseId, name, brand, quantity, price, notes });
 
   if (!name) {
     return res.status(400).json({ error: 'Nome é obrigatório' });
@@ -33,8 +33,7 @@ exports.addStockItem = async (req, res) => {
         name,
         brand: brand || null,
         quantity: parseInt(quantity) || 1,
-        cost: parseFloat(cost) || 0,
-        profitMargin: parseFloat(profitMargin) || 0,
+        price: parseFloat(price) || 0,
         notes: notes || null
       },
       include: {
@@ -53,7 +52,7 @@ exports.addStockItem = async (req, res) => {
 // Atualizar item do estoque pronto
 exports.updateStockItem = async (req, res) => {
   const { id } = req.params;
-  const { miniaturaBaseId, name, brand, quantity, cost, profitMargin, notes } = req.body;
+  const { miniaturaBaseId, name, brand, quantity, price, notes } = req.body;
 
   try {
     const updateData = {};
@@ -61,8 +60,7 @@ exports.updateStockItem = async (req, res) => {
     if (name !== undefined) updateData.name = name;
     if (brand !== undefined) updateData.brand = brand;
     if (quantity !== undefined) updateData.quantity = parseInt(quantity);
-    if (cost !== undefined) updateData.cost = parseFloat(cost);
-    if (profitMargin !== undefined) updateData.profitMargin = parseFloat(profitMargin);
+    if (price !== undefined) updateData.price = parseFloat(price);
     if (notes !== undefined) updateData.notes = notes;
 
     const item = await prisma.readyStock.update({
@@ -130,9 +128,6 @@ exports.sendToClientGarage = async (req, res) => {
     
     console.log('🖼️ Photo URL:', photoUrl);
 
-    // Calcular o preço final com a margem de lucro
-    const finalPrice = stockItem.cost * (1 + stockItem.profitMargin / 100);
-
     // Criar a miniatura na garagem do cliente
     const garage = await prisma.garage.create({
       data: {
@@ -140,8 +135,8 @@ exports.sendToClientGarage = async (req, res) => {
         name: stockItem.name,
         description: stockItem.notes || `Miniatura: ${stockItem.brand || 'N/A'}`,
         photoUrl: photoUrl,
-        totalValue: finalPrice,
-        paidValue: finalPrice,
+        totalValue: stockItem.price,
+        paidValue: stockItem.price,
         deliveryDate: new Date(),
         status: 'completed'
       }
@@ -149,19 +144,12 @@ exports.sendToClientGarage = async (req, res) => {
 
     console.log('✅ Criado na garagem:', garage);
 
-    // Decrementar a quantidade do estoque ou deletar se for a última unidade
-    if (stockItem.quantity > 1) {
-      await prisma.readyStock.update({
-        where: { id: parseInt(readyStockId) },
-        data: { quantity: stockItem.quantity - 1 }
-      });
-      console.log('📉 Quantidade decrementada:', stockItem.quantity - 1);
-    } else {
-      await prisma.readyStock.delete({
-        where: { id: parseInt(readyStockId) }
-      });
-      console.log('🗑️ Última unidade - item deletado do estoque');
-    }
+    // Deletar do estoque pronto
+    await prisma.readyStock.delete({
+      where: { id: parseInt(readyStockId) }
+    });
+
+    console.log('🗑️ Deletado do estoque pronto');
 
     res.json({
       message: 'Miniatura enviada para garagem do cliente com sucesso',

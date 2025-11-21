@@ -93,14 +93,15 @@ model Shipment {
 }
 
 model MiniaturaBase {
-  id            Int       @id @default(autoincrement())
-  code          String    @unique
-  name          String
-  brand         String
-  photoUrl      String?
-  isPreOrder    Boolean   @default(false)
-  releaseDate   DateTime?
-  createdAt     DateTime  @default(now())
+  id                Int       @id @default(autoincrement())
+  code              String    @unique
+  name              String
+  brand             String
+  photoUrl          String?
+  isPreOrder        Boolean   @default(false)
+  releaseDate       DateTime?
+  availableQuantity Int       @default(0)
+  createdAt         DateTime  @default(now())
 
   usaStock      USAStock[]
   readyStock    ReadyStock[]

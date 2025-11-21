@@ -91,21 +91,11 @@ export function MiniaturaAutocomplete({ value, onChange, onSelectMiniatura, plac
               className="w-full text-left px-4 py-3 hover:bg-blue-100 dark:hover:bg-slate-600 transition border-b border-gray-100 dark:border-gray-600 last:border-b-0 flex items-center gap-3"
             >
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {miniatura.name}
-                  </span>
-                  {miniatura.isPreOrder && (
-                    <span className="inline-flex items-center px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-xs font-semibold">
-                      🚀 PRÉ-VENDA
-                    </span>
-                  )}
+                <div className="font-semibold text-gray-900 dark:text-white">
+                  {miniatura.name}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   {miniatura.brand}
-                  {miniatura.isPreOrder && miniatura.releaseDate && (
-                    <span className="ml-2">• Lançamento: {new Date(miniatura.releaseDate).toLocaleDateString('pt-BR')}</span>
-                  )}
                 </div>
               </div>
               <div className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded font-mono text-xs font-bold whitespace-nowrap">

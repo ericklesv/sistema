@@ -46,7 +46,7 @@ exports.getMiniaturaBaseById = async (req, res) => {
 
 // Criar nova miniatura base
 exports.createMiniaturaBase = async (req, res) => {
-  const { name, brand, photoUrl, isPreOrder, releaseDate } = req.body;
+  const { name, brand, photoUrl } = req.body;
 
   if (!name || !brand) {
     return res.status(400).json({ error: 'Nome e marca são obrigatórios' });
@@ -60,9 +60,7 @@ exports.createMiniaturaBase = async (req, res) => {
         code,
         name,
         brand,
-        photoUrl: photoUrl || null,
-        isPreOrder: isPreOrder || false,
-        releaseDate: releaseDate ? new Date(releaseDate) : null
+        photoUrl: photoUrl || null
       }
     });
 
@@ -98,6 +96,36 @@ exports.updateMiniaturaBase = async (req, res) => {
       return res.status(404).json({ error: 'Miniatura não encontrada' });
     }
     res.status(500).json({ error: 'Erro ao atualizar miniatura' });
+  }
+};
+
+// Atualizar status de pré-venda
+exports.updatePreOrderStatus = async (req, res) => {
+  const { id } = req.params;
+  const { isPreOrder, releaseDate, availableQuantity } = req.body;
+
+  try {
+    const updateData = {
+      isPreOrder: isPreOrder === true,
+      releaseDate: releaseDate ? new Date(releaseDate) : null
+    };
+    
+    if (availableQuantity !== undefined) {
+      updateData.availableQuantity = parseInt(availableQuantity) || 0;
+    }
+
+    const miniatura = await prisma.miniaturaBase.update({
+      where: { id: parseInt(id) },
+      data: updateData
+    });
+
+    res.json(miniatura);
+  } catch (err) {
+    console.error('Erro ao atualizar status:', err);
+    if (err.code === 'P2025') {
+      return res.status(404).json({ error: 'Miniatura não encontrada' });
+    }
+    res.status(500).json({ error: 'Erro ao atualizar status' });
   }
 };
 

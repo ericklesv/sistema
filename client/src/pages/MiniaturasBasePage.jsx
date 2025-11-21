@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
-import DateInput from '../components/DateInput';
 
 export function MiniaturasBasePage() {
   const { user } = useContext(AuthContext);
@@ -11,13 +10,10 @@ export function MiniaturasBasePage() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [preOrderFilter, setPreOrderFilter] = useState('all'); // 'all', 'released', 'preorder'
   const [formData, setFormData] = useState({
     name: '',
     brand: '',
-    photoUrl: '',
-    isPreOrder: false,
-    releaseDate: ''
+    photoUrl: ''
   });
   const [photoPreview, setPhotoPreview] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -25,6 +21,44 @@ export function MiniaturasBasePage() {
   const [selectedMiniaturaForClients, setSelectedMiniaturaForClients] = useState(null);
   const [clientsWithMiniatura, setClientsWithMiniatura] = useState([]);
   const [loadingClients, setLoadingClients] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [selectedMiniaturaForStatus, setSelectedMiniaturaForStatus] = useState(null);
+  const [statusFormData, setStatusFormData] = useState({
+    isPreOrder: true,
+    releaseDate: ''
+  });
+
+  const handleShowStatusModal = (miniatura) => {
+    setSelectedMiniaturaForStatus(miniatura);
+    setStatusFormData({
+      isPreOrder: miniatura.isPreOrder,
+      releaseDate: miniatura.releaseDate ? new Date(miniatura.releaseDate).toISOString().split('T')[0] : '',
+      availableQuantity: miniatura.availableQuantity || 0
+    });
+    setShowStatusModal(true);
+  };
+
+  const handleUpdateStatus = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    
+    try {
+      await api.put(`/api/miniaturas-base/${selectedMiniaturaForStatus.id}/status`, {
+        isPreOrder: statusFormData.isPreOrder,
+        releaseDate: statusFormData.releaseDate || null,
+        availableQuantity: parseInt(statusFormData.availableQuantity) || 0
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      await fetchMiniaturas();
+      setShowStatusModal(false);
+      alert('✅ Status atualizado com sucesso!');
+    } catch (err) {
+      console.error('Erro ao atualizar status:', err);
+      alert('❌ Erro ao atualizar status');
+    }
+  };
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -130,9 +164,7 @@ export function MiniaturasBasePage() {
     setFormData({
       name: miniatura.name,
       brand: miniatura.brand,
-      photoUrl: miniatura.photoUrl || '',
-      isPreOrder: miniatura.isPreOrder || false,
-      releaseDate: miniatura.releaseDate || ''
+      photoUrl: miniatura.photoUrl || ''
     });
     if (miniatura.photoUrl) {
       setPhotoPreview(miniatura.photoUrl);
@@ -182,16 +214,11 @@ export function MiniaturasBasePage() {
     }
   };
 
-  const filteredMiniaturas = miniaturas.filter(m => {
-    const matchesSearch = m.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.brand.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    if (preOrderFilter === 'all') return matchesSearch;
-    if (preOrderFilter === 'preorder') return matchesSearch && m.isPreOrder;
-    if (preOrderFilter === 'released') return matchesSearch && !m.isPreOrder;
-    return matchesSearch;
-  });
+  const filteredMiniaturas = miniaturas.filter(m =>
+    m.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    m.brand.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return <div className="p-8 text-center">Carregando...</div>;
@@ -231,40 +258,6 @@ export function MiniaturasBasePage() {
           />
         </div>
 
-        {/* Filtros de Pré-Venda */}
-        <div className="flex gap-3 mb-6">
-          <button
-            onClick={() => setPreOrderFilter('all')}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              preOrderFilter === 'all'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600'
-            }`}
-          >
-            Todas
-          </button>
-          <button
-            onClick={() => setPreOrderFilter('released')}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              preOrderFilter === 'released'
-                ? 'bg-green-600 text-white'
-                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600'
-            }`}
-          >
-            ✅ Já Lançadas
-          </button>
-          <button
-            onClick={() => setPreOrderFilter('preorder')}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              preOrderFilter === 'preorder'
-                ? 'bg-purple-600 text-white'
-                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600'
-            }`}
-          >
-            🚀 Pré-Vendas
-          </button>
-        </div>
-
         {/* Tabela de Miniaturas */}
         <div className="bg-white dark:bg-slate-700 rounded-lg shadow-lg overflow-hidden">
           {filteredMiniaturas.length === 0 ? (
@@ -288,6 +281,9 @@ export function MiniaturasBasePage() {
                     </th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                       Status
+                    </th>
+                    <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      Qtd Disp.
                     </th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                       Foto
@@ -320,21 +316,28 @@ export function MiniaturasBasePage() {
                       </td>
                       <td className="px-6 py-4">
                         {miniatura.isPreOrder ? (
-                          <div className="flex flex-col gap-1">
-                            <span className="inline-flex items-center px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-xs font-semibold">
-                              🚀 PRÉ-VENDA
-                            </span>
-                            {miniatura.releaseDate && (
-                              <span className="text-xs text-gray-600 dark:text-gray-400">
-                                Lançamento: {new Date(miniatura.releaseDate).toLocaleDateString('pt-BR')}
-                              </span>
-                            )}
-                          </div>
+                          <span className="inline-block px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full text-xs font-semibold">
+                            📦 Pré-venda
+                          </span>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs font-semibold">
-                            ✅ LANÇADA
+                          <span className="inline-block px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs font-semibold">
+                            ✅ Lançada
                           </span>
                         )}
+                        {miniatura.releaseDate && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {new Date(miniatura.releaseDate).toLocaleDateString('pt-BR')}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                          (miniatura.availableQuantity || 0) > 0
+                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {miniatura.availableQuantity || 0}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         {miniatura.photoUrl ? (
@@ -349,6 +352,13 @@ export function MiniaturasBasePage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() => handleShowStatusModal(miniatura)}
+                            className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded transition text-sm"
+                            title="Alterar status"
+                          >
+                            🔄
+                          </button>
                           <button
                             onClick={() => handleShowClients(miniatura)}
                             className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded transition text-sm"
@@ -444,30 +454,6 @@ export function MiniaturasBasePage() {
                   )}
                 </div>
 
-                {/* Pré-Venda */}
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="isPreOrder"
-                    checked={formData.isPreOrder}
-                    onChange={(e) => setFormData({ ...formData, isPreOrder: e.target.checked, releaseDate: e.target.checked ? formData.releaseDate : '' })}
-                    className="w-4 h-4 text-blue-600 bg-white dark:bg-slate-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
-                  />
-                  <label htmlFor="isPreOrder" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    🚀 É Pré-Venda?
-                  </label>
-                </div>
-
-                {/* Data de Lançamento */}
-                {formData.isPreOrder && (
-                  <DateInput
-                    label="Data de Lançamento"
-                    value={formData.releaseDate}
-                    onChange={(e) => setFormData({ ...formData, releaseDate: e.target.value })}
-                    placeholder="DD/MM/AAAA"
-                  />
-                )}
-
                 {/* Botões */}
                 <div className="flex gap-3 pt-4">
                   <button
@@ -554,6 +540,108 @@ export function MiniaturasBasePage() {
                   Fechar
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Edição de Status */}
+        {showStatusModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-2xl">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  🔄 Alterar Status
+                </h2>
+                <button
+                  onClick={() => setShowStatusModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {selectedMiniaturaForStatus?.name} - {selectedMiniaturaForStatus?.brand}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500">
+                  Código: {selectedMiniaturaForStatus?.code}
+                </p>
+              </div>
+
+              <form onSubmit={handleUpdateStatus}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Status
+                    </label>
+                    <div className="space-y-2">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="isPreOrder"
+                          checked={statusFormData.isPreOrder === true}
+                          onChange={() => setStatusFormData({ ...statusFormData, isPreOrder: true })}
+                          className="mr-2"
+                        />
+                        <span className="text-gray-900 dark:text-white">📦 Pré-venda</span>
+                      </label>
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="isPreOrder"
+                          checked={statusFormData.isPreOrder === false}
+                          onChange={() => setStatusFormData({ ...statusFormData, isPreOrder: false })}
+                          className="mr-2"
+                        />
+                        <span className="text-gray-900 dark:text-white">✅ Já lançada</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Data de Lançamento (opcional)
+                    </label>
+                    <input
+                      type="date"
+                      value={statusFormData.releaseDate}
+                      onChange={(e) => setStatusFormData({ ...statusFormData, releaseDate: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Quantidade Disponível
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={statusFormData.availableQuantity || 0}
+                      onChange={(e) => setStatusFormData({ ...statusFormData, availableQuantity: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    type="button"
+                    onClick={() => setShowStatusModal(false)}
+                    className="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition font-medium"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

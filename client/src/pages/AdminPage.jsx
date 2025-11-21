@@ -258,6 +258,36 @@ export function AdminPage() {
     }
   };
 
+  const handleTransferToGarage = async (preSale) => {
+    const confirmMessage = `
+🚚 Enviar para Garagem
+
+Miniatura: ${preSale.name}
+Valor Total: R$ ${parseFloat(preSale.totalValue || 0).toFixed(2)}
+Já Pago: R$ ${parseFloat(preSale.paidValue || 0).toFixed(2)}
+Saldo: R$ ${(preSale.totalValue - preSale.paidValue).toFixed(2)}
+
+Confirma a transferência para a garagem?
+    `;
+
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    try {
+      await api.post(`/api/admin/pre-sales/${preSale.id}/transfer-to-garage`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      await handleSelectUser(selectedUser);
+      alert('✅ Miniatura transferida para garagem com sucesso!');
+    } catch (err) {
+      alert('❌ Erro ao transferir: ' + (err.response?.data?.error || err.message));
+      console.error('Erro:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -452,6 +482,15 @@ export function AdminPage() {
                               >
                                 Editar
                               </button>
+                              {activeTab === 'pre-sales' && (
+                                <button
+                                  onClick={() => handleTransferToGarage(item)}
+                                  className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 text-sm font-semibold mr-4"
+                                  title="Enviar para Garagem"
+                                >
+                                  🚚 Enviar
+                                </button>
+                              )}
                               <button
                                 onClick={() => handleDelete(item.id)}
                                 className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-semibold"
@@ -522,11 +561,7 @@ export function AdminPage() {
                             ...formData,
                             name: miniatura.name,
                             brand: miniatura.brand || '',
-                            description: miniatura.brand || formData.description,
-                            // Auto-preencher data de entrega se for pré-venda
-                            deliveryDate: miniatura.isPreOrder && miniatura.releaseDate 
-                              ? new Date(miniatura.releaseDate).toISOString().split('T')[0]
-                              : formData.deliveryDate
+                            description: miniatura.brand || formData.description
                           });
                         }}
                         placeholder="Pesquisar miniatura no banco de dados..."

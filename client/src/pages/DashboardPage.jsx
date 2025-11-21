@@ -348,11 +348,7 @@ export function DashboardPage() {
                         ...formData,
                         name: miniatura.name,
                         brand: miniatura.brand || '',
-                        description: miniatura.brand || formData.description,
-                        // Auto-preencher data de entrega se for pré-venda
-                        deliveryDate: miniatura.isPreOrder && miniatura.releaseDate 
-                          ? new Date(miniatura.releaseDate).toISOString().split('T')[0]
-                          : formData.deliveryDate
+                        description: miniatura.brand || formData.description
                       });
                     }}
                     placeholder="Pesquisar miniatura no banco de dados..."
