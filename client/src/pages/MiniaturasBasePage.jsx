@@ -13,7 +13,8 @@ export function MiniaturasBasePage() {
   const [formData, setFormData] = useState({
     name: '',
     brand: '',
-    photoUrl: ''
+    photoUrl: '',
+    availableQuantity: 0
   });
   const [photoPreview, setPhotoPreview] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -37,6 +38,7 @@ export function MiniaturasBasePage() {
     paidValue: ''
   });
   const [users, setUsers] = useState([]);
+  const [clientSearchTerm, setClientSearchTerm] = useState('');
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -221,7 +223,8 @@ export function MiniaturasBasePage() {
     setFormData({
       name: miniatura.name,
       brand: miniatura.brand,
-      photoUrl: miniatura.photoUrl || ''
+      photoUrl: miniatura.photoUrl || '',
+      availableQuantity: miniatura.availableQuantity || 0
     });
     if (miniatura.photoUrl) {
       setPhotoPreview(miniatura.photoUrl);
@@ -248,7 +251,7 @@ export function MiniaturasBasePage() {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', brand: '', photoUrl: '' });
+    setFormData({ name: '', brand: '', photoUrl: '', availableQuantity: 0 });
     setPhotoPreview(null);
     setEditingId(null);
   };
@@ -559,6 +562,23 @@ export function MiniaturasBasePage() {
                   )}
                 </div>
 
+                {/* Quantidade Disponível (apenas para edição) */}
+                {editingId && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      📦 Quantidade Disponível
+                    </label>
+                    <input
+                      type="number"
+                      name="availableQuantity"
+                      min="0"
+                      value={formData.availableQuantity}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                )}
+
                 {/* Botões */}
                 <div className="flex gap-3 pt-4">
                   <button
@@ -785,6 +805,13 @@ export function MiniaturasBasePage() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Cliente *
                     </label>
+                    <input
+                      type="text"
+                      placeholder="🔍 Buscar cliente por nome, email ou telefone..."
+                      value={clientSearchTerm}
+                      onChange={(e) => setClientSearchTerm(e.target.value)}
+                      className="w-full px-3 py-2 mb-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    />
                     <select
                       value={addToClientData.userId}
                       onChange={(e) => setAddToClientData({ ...addToClientData, userId: e.target.value })}
@@ -792,11 +819,19 @@ export function MiniaturasBasePage() {
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Selecione um cliente</option>
-                      {users.map(user => (
-                        <option key={user.id} value={user.id}>
-                          {user.username} ({user.email})
-                        </option>
-                      ))}
+                      {users
+                        .filter(u => {
+                          const search = clientSearchTerm.toLowerCase();
+                          return u.username.toLowerCase().includes(search) ||
+                                 u.email.toLowerCase().includes(search) ||
+                                 (u.whatsapp && u.whatsapp.includes(search));
+                        })
+                        .map(user => (
+                          <option key={user.id} value={user.id}>
+                            {user.username} ({user.email}) {user.whatsapp ? `- ${user.whatsapp}` : ''}
+                          </option>
+                        ))
+                      }
                     </select>
                   </div>
 
