@@ -22,7 +22,8 @@ export function DashboardPage() {
     totalValue: '',
     paidValue: '',
     entranceDate: '',
-    stock: ''
+    stock: '',
+    photoFile: null
   });
   const [selectedMiniatura, setSelectedMiniatura] = useState(null);
 
@@ -64,10 +65,32 @@ export function DashboardPage() {
     const endpoint = activeTab === 'pre-sales' ? '/api/miniaturas/pre-sales' : '/api/miniaturas/garage';
 
     try {
+      let photoUrl = selectedMiniatura?.photoUrl || null;
+
+      // Se não tem miniatura selecionada E tem foto, criar nova miniatura no banco
+      if (!selectedMiniatura && formData.photoFile) {
+        const reader = new FileReader();
+        photoUrl = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(formData.photoFile);
+        });
+
+        // Criar miniatura no banco de dados
+        const miniaturaData = {
+          name: formData.name,
+          brand: formData.description,
+          photoUrl: photoUrl
+        };
+        
+        await api.post('/api/miniaturas-base', miniaturaData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+
       const dataToSend = {
         name: formData.name,
         description: formData.description,
-        photoUrl: selectedMiniatura?.photoUrl || null
+        photoUrl: photoUrl
       };
 
       if (activeTab === 'pre-sales') {
@@ -83,7 +106,7 @@ export function DashboardPage() {
       await api.post(endpoint, dataToSend, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setFormData({ name: '', description: '', deliveryDate: '', totalValue: '', paidValue: '', entranceDate: '', stock: '' });
+      setFormData({ name: '', description: '', deliveryDate: '', totalValue: '', paidValue: '', entranceDate: '', stock: '', photoFile: null });
       setSelectedMiniatura(null);
       setShowAddModal(false);
       fetchData();
@@ -310,6 +333,29 @@ export function DashboardPage() {
                     rows="3"
                   />
                 </div>
+
+                {/* Foto - apenas se não tiver miniatura selecionada */}
+                {!selectedMiniatura && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Foto da Miniatura (Opcional)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setFormData({ ...formData, photoFile: e.target.files[0] })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {formData.photoFile && (
+                      <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                        ✓ Foto selecionada: {formData.photoFile.name}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      💡 Se adicionar uma foto, a miniatura será salva no banco de dados
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   {activeTab === 'pre-sales' ? (
