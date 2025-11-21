@@ -98,6 +98,8 @@ model MiniaturaBase {
   name          String
   brand         String
   photoUrl      String?
+  isPreOrder    Boolean   @default(false)
+  releaseDate   DateTime?
   createdAt     DateTime  @default(now())
 
   usaStock      USAStock[]

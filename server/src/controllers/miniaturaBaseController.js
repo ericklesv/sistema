@@ -46,7 +46,7 @@ exports.getMiniaturaBaseById = async (req, res) => {
 
 // Criar nova miniatura base
 exports.createMiniaturaBase = async (req, res) => {
-  const { name, brand, photoUrl } = req.body;
+  const { name, brand, photoUrl, isPreOrder, releaseDate } = req.body;
 
   if (!name || !brand) {
     return res.status(400).json({ error: 'Nome e marca são obrigatórios' });
@@ -60,7 +60,9 @@ exports.createMiniaturaBase = async (req, res) => {
         code,
         name,
         brand,
-        photoUrl: photoUrl || null
+        photoUrl: photoUrl || null,
+        isPreOrder: isPreOrder || false,
+        releaseDate: releaseDate ? new Date(releaseDate) : null
       }
     });
 
@@ -74,13 +76,15 @@ exports.createMiniaturaBase = async (req, res) => {
 // Atualizar miniatura base
 exports.updateMiniaturaBase = async (req, res) => {
   const { id } = req.params;
-  const { name, brand, photoUrl } = req.body;
+  const { name, brand, photoUrl, isPreOrder, releaseDate } = req.body;
 
   try {
     const updateData = {};
     if (name !== undefined) updateData.name = name;
     if (brand !== undefined) updateData.brand = brand;
     if (photoUrl !== undefined) updateData.photoUrl = photoUrl;
+    if (isPreOrder !== undefined) updateData.isPreOrder = isPreOrder;
+    if (releaseDate !== undefined) updateData.releaseDate = releaseDate ? new Date(releaseDate) : null;
 
     const miniatura = await prisma.miniaturaBase.update({
       where: { id: parseInt(id) },
