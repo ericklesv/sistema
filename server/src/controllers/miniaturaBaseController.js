@@ -319,7 +319,12 @@ exports.addMiniaturaToClientPreSale = async (req, res) => {
       newStockQuantity: miniatura.stockQuantity - 1
     });
   } catch (err) {
-    console.error('Erro ao adicionar miniatura ao cliente:', err);
-    res.status(500).json({ error: 'Erro ao adicionar miniatura ao cliente' });
+    console.error('❌ Erro ao adicionar miniatura ao cliente:', err);
+    console.error('📋 Detalhes do erro:', err.message);
+    console.error('📋 Stack:', err.stack);
+    res.status(500).json({ 
+      error: 'Erro ao adicionar miniatura ao cliente',
+      details: err.message 
+    });
   }
 };
