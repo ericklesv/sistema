@@ -99,6 +99,7 @@ model MiniaturaBase {
   brand             String
   photoUrl          String?
   isPreOrder        Boolean   @default(false)
+  preOrderType      String?
   releaseDate       DateTime?
   stockQuantity     Int       @default(0)
   createdAt         DateTime  @default(now())

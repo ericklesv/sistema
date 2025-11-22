@@ -112,7 +112,8 @@ export function PreOrderPage() {
     setSelectedPreOrder(preOrder);
     setQuantityFormData({
       stockQuantity: preOrder.stockQuantity || 0,
-      releaseDate: preOrder.releaseDate ? new Date(preOrder.releaseDate).toISOString().split('T')[0] : ''
+      releaseDate: preOrder.releaseDate ? new Date(preOrder.releaseDate).toISOString().split('T')[0] : '',
+      preOrderType: preOrder.preOrderType || ''
     });
     setShowQuantityModal(true);
   };
@@ -150,7 +151,8 @@ export function PreOrderPage() {
         {
           isPreOrder: true,
           releaseDate: quantityFormData.releaseDate || null,
-          stockQuantity: parseInt(quantityFormData.stockQuantity) || 0
+          stockQuantity: parseInt(quantityFormData.stockQuantity) || 0,
+          preOrderType: quantityFormData.preOrderType || null
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -173,7 +175,8 @@ export function PreOrderPage() {
       brand: '',
       photoUrl: '',
       stockQuantity: 0,
-      releaseDate: ''
+      releaseDate: '',
+      preOrderType: ''
     });
     setShowAddModal(true);
   };
@@ -207,7 +210,8 @@ export function PreOrderPage() {
         {
           isPreOrder: true,
           releaseDate: addFormData.releaseDate || null,
-          stockQuantity: parseInt(addFormData.stockQuantity) || 0
+          stockQuantity: parseInt(addFormData.stockQuantity) || 0,
+          preOrderType: addFormData.preOrderType || null
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -327,6 +331,9 @@ export function PreOrderPage() {
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
                       Marca
                     </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      🏷️ Tipo
+                    </th>
                     <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">
                       📦 Estoque
                     </th>
@@ -361,6 +368,15 @@ export function PreOrderPage() {
                       </td>
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                         {preOrder.brand}
+                      </td>
+                      <td className="px-6 py-4">
+                        {preOrder.preOrderType ? (
+                          <span className="inline-block px-2 py-1 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 text-purple-800 dark:text-purple-200 rounded text-xs font-semibold">
+                            {preOrder.preOrderType}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 dark:text-gray-500 text-sm">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
@@ -483,6 +499,24 @@ export function PreOrderPage() {
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500"
                       placeholder="https://..."
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      🏷️ Tipo de Pré-Venda *
+                    </label>
+                    <select
+                      value={addFormData.preOrderType}
+                      onChange={(e) => setAddFormData({ ...addFormData, preOrderType: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500"
+                      required
+                    >
+                      <option value="">Selecione o tipo</option>
+                      <option value="PRÉ VENDA EUA">PRÉ VENDA EUA</option>
+                      <option value="PRÉ VENDA MINI GT">PRÉ VENDA MINI GT</option>
+                      <option value="PRÉ VENDA TARMAC">PRÉ VENDA TARMAC</option>
+                      <option value="PRÉ VENDA MATTEL CREATIONS">PRÉ VENDA MATTEL CREATIONS</option>
+                    </select>
                   </div>
 
                   <div>
@@ -637,6 +671,24 @@ export function PreOrderPage() {
 
               <form onSubmit={handleUpdateQuantity}>
                 <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      🏷️ Tipo de Pré-Venda *
+                    </label>
+                    <select
+                      value={quantityFormData.preOrderType}
+                      onChange={(e) => setQuantityFormData({ ...quantityFormData, preOrderType: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                      required
+                    >
+                      <option value="">Selecione o tipo</option>
+                      <option value="PRÉ VENDA EUA">PRÉ VENDA EUA</option>
+                      <option value="PRÉ VENDA MINI GT">PRÉ VENDA MINI GT</option>
+                      <option value="PRÉ VENDA TARMAC">PRÉ VENDA TARMAC</option>
+                      <option value="PRÉ VENDA MATTEL CREATIONS">PRÉ VENDA MATTEL CREATIONS</option>
+                    </select>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       📦 Quantidade em Estoque *
