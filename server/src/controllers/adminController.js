@@ -69,7 +69,7 @@ exports.getUserPreSales = async (req, res) => {
 // Adicionar pré-venda para um cliente (admin)
 exports.addPreSaleToUser = async (req, res) => {
   const { userId } = req.params;
-  const { name, description, deliveryDate, totalValue, paidValue, photoUrl } = req.body;
+  const { name, description, deliveryDate, totalValue, paidValue, photoUrl, preOrderType } = req.body;
 
   if (!name) {
     return res.status(400).json({ error: 'Nome da miniatura é obrigatório' });
@@ -84,7 +84,8 @@ exports.addPreSaleToUser = async (req, res) => {
         photoUrl: photoUrl || null,
         deliveryDate: deliveryDate ? new Date(deliveryDate) : null,
         totalValue: parseFloat(totalValue) || 0,
-        paidValue: parseFloat(paidValue) || 0
+        paidValue: parseFloat(paidValue) || 0,
+        preOrderType: preOrderType || null
       }
     });
 
@@ -98,7 +99,7 @@ exports.addPreSaleToUser = async (req, res) => {
 // Atualizar pré-venda (admin)
 exports.updatePreSale = async (req, res) => {
   const { id } = req.params;
-  const { name, description, deliveryDate, status, situation, totalValue, paidValue } = req.body;
+  const { name, description, deliveryDate, status, situation, totalValue, paidValue, preOrderType } = req.body;
 
   try {
     const updateData = {};
@@ -109,6 +110,7 @@ exports.updatePreSale = async (req, res) => {
     if (situation !== undefined) updateData.situation = situation;
     if (totalValue !== undefined) updateData.totalValue = parseFloat(totalValue);
     if (paidValue !== undefined) updateData.paidValue = parseFloat(paidValue);
+    if (preOrderType !== undefined) updateData.preOrderType = preOrderType;
 
     const preSale = await prisma.preSale.update({
       where: { id: parseInt(id) },

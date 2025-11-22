@@ -25,7 +25,8 @@ export function AdminPage() {
     paidValue: '',
     entranceDate: '',
     stock: '',
-    photoFile: null
+    photoFile: null,
+    preOrderType: ''
   });
   const [selectedMiniatura, setSelectedMiniatura] = useState(null);
   const [searchClient, setSearchClient] = useState('');
@@ -157,6 +158,7 @@ export function AdminPage() {
         dataToSend.deliveryDate = formData.deliveryDate;
         dataToSend.totalValue = parseFloat(formData.totalValue) || 0;
         dataToSend.paidValue = parseFloat(formData.paidValue) || parseFloat(formData.totalValue) || 0;
+        dataToSend.preOrderType = formData.preOrderType || null;
       } else {
         dataToSend.deliveryDate = formData.entranceDate;
         const stockValue = parseFloat(formData.stock) || 0;
@@ -167,7 +169,7 @@ export function AdminPage() {
       await api.post(endpoint, dataToSend, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setFormData({ name: '', brand: '', description: '', deliveryDate: '', totalValue: '', paidValue: '', entranceDate: '', stock: '', photoFile: null });
+      setFormData({ name: '', brand: '', description: '', deliveryDate: '', totalValue: '', paidValue: '', entranceDate: '', stock: '', photoFile: null, preOrderType: '' });
       setSelectedMiniatura(null);
       setShowAddModal(false);
       await handleSelectUser(selectedUser);
@@ -226,7 +228,8 @@ export function AdminPage() {
     setEditingItem(item);
     setEditFormData({
       paidValue: item.paidValue,
-      situation: item.situation || 'Esperando lançamento'
+      situation: item.situation || 'Esperando lançamento',
+      preOrderType: item.preOrderType || ''
     });
     setShowEditModal(true);
   };
@@ -244,6 +247,7 @@ export function AdminPage() {
       await api.put(endpoint, {
         paidValue: parseFloat(editFormData.paidValue) || 0,
         situation: editFormData.situation,
+        preOrderType: editFormData.preOrderType,
         status: editingItem.status
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -418,6 +422,11 @@ Confirma a transferência para a garagem?
                           <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
                             Nome
                           </th>
+                          {activeTab === 'pre-sales' && (
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                              🏷️ Tipo
+                            </th>
+                          )}
                           <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
                             Adicionado
                           </th>
@@ -444,6 +453,17 @@ Confirma a transferência para a garagem?
                             <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                               {item.name}
                             </td>
+                            {activeTab === 'pre-sales' && (
+                              <td className="px-6 py-4 text-sm">
+                                {item.preOrderType ? (
+                                  <span className="inline-block px-2 py-1 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 text-purple-800 dark:text-purple-200 rounded text-xs font-semibold">
+                                    {item.preOrderType}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 dark:text-gray-500">-</span>
+                                )}
+                              </td>
+                            )}
                             <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                               {new Date(item.addedDate).toLocaleDateString('pt-BR')}
                             </td>
@@ -616,6 +636,26 @@ Confirma a transferência para a garagem?
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           💡 Se adicionar uma foto, a miniatura será salva no banco de dados
                         </p>
+                      </div>
+                    )}
+
+                    {activeTab === 'pre-sales' && (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                          🏷️ Tipo de Pré-Venda *
+                        </label>
+                        <select
+                          value={formData.preOrderType}
+                          onChange={(e) => setFormData({ ...formData, preOrderType: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        >
+                          <option value="">Selecione o tipo</option>
+                          <option value="PRÉ VENDA EUA">PRÉ VENDA EUA</option>
+                          <option value="PRÉ VENDA MINI GT">PRÉ VENDA MINI GT</option>
+                          <option value="PRÉ VENDA TARMAC">PRÉ VENDA TARMAC</option>
+                          <option value="PRÉ VENDA MATTEL CREATIONS">PRÉ VENDA MATTEL CREATIONS</option>
+                        </select>
                       </div>
                     )}
 
@@ -811,21 +851,40 @@ Confirma a transferência para a garagem?
                     </div>
 
                     {activeTab === 'pre-sales' && (
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Situação da Miniatura
-                        </label>
-                        <select
-                          value={editFormData.situation}
-                          onChange={(e) => setEditFormData({ ...editFormData, situation: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="Esperando lançamento">Esperando lançamento</option>
-                          <option value="Na garagem dos EUA">Na garagem dos EUA</option>
-                          <option value="Enviada para o Brasil">Enviada para o Brasil</option>
-                          <option value="Esperando pagamento">Esperando pagamento</option>
-                        </select>
-                      </div>
+                      <>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            🏷️ Tipo de Pré-Venda
+                          </label>
+                          <select
+                            value={editFormData.preOrderType}
+                            onChange={(e) => setEditFormData({ ...editFormData, preOrderType: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Selecione o tipo</option>
+                            <option value="PRÉ VENDA EUA">PRÉ VENDA EUA</option>
+                            <option value="PRÉ VENDA MINI GT">PRÉ VENDA MINI GT</option>
+                            <option value="PRÉ VENDA TARMAC">PRÉ VENDA TARMAC</option>
+                            <option value="PRÉ VENDA MATTEL CREATIONS">PRÉ VENDA MATTEL CREATIONS</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Situação da Miniatura
+                          </label>
+                          <select
+                            value={editFormData.situation}
+                            onChange={(e) => setEditFormData({ ...editFormData, situation: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="Esperando lançamento">Esperando lançamento</option>
+                            <option value="Na garagem dos EUA">Na garagem dos EUA</option>
+                            <option value="Enviada para o Brasil">Enviada para o Brasil</option>
+                            <option value="Esperando pagamento">Esperando pagamento</option>
+                          </select>
+                        </div>
+                      </>
                     )}
 
                     <div className="flex gap-3 pt-4">

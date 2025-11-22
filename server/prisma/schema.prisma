@@ -35,6 +35,7 @@ model PreSale {
   deliveryDate  DateTime?
   status        String    @default("pending")
   situation     String?   @default("Esperando lançamento")
+  preOrderType  String?
   totalValue    Float     @default(0)
   paidValue     Float     @default(0)
 
