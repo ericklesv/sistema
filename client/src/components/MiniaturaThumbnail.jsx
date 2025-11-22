@@ -71,12 +71,15 @@ export function MiniaturaThumbnail({ miniatura, onDelete, type }) {
           }`}>
             <span>📦</span>
             <div>
-              <div>{isGarage ? 'Entrada' : 'Entrega'}: <strong>{formatDate(miniatura.deliveryDate)}</strong></div>
+              <div>{isGarage ? 'Entrada' : 'Entrega prevista'}: <strong>{formatDate(miniatura.deliveryDate)}</strong></div>
               {daysLeft !== null && !isGarage && (
                 <div className="text-xs mt-1">
                   {isOverdue 
                     ? `⚠️ ${Math.abs(daysLeft)} dias atrasado` 
                     : `${daysLeft} dias restantes`}
+                  <div className="mt-1 opacity-75">
+                    Podendo chegar antes ou depois do tempo previsto
+                  </div>
                 </div>
               )}
             </div>

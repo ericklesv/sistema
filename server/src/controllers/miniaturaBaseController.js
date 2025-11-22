@@ -282,6 +282,7 @@ exports.addMiniaturaToClientPreSale = async (req, res) => {
           deliveryDate: miniatura.releaseDate,
           totalValue: parseFloat(totalValue) || 0,
           paidValue: parseFloat(paidValue) || 0,
+          preOrderType: miniatura.preOrderType || null,
           situation: 'Esperando lançamento'
         }
       });

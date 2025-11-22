@@ -88,7 +88,7 @@ export function PreOrderPage() {
     return (
       client.username?.toLowerCase().includes(search) ||
       client.email?.toLowerCase().includes(search) ||
-      client.phone?.toLowerCase().includes(search)
+      client.whatsapp?.toLowerCase().includes(search)
     );
   });
 
@@ -249,8 +249,8 @@ export function PreOrderPage() {
         `/api/miniaturas-base/${selectedPreOrder.id}/add-to-client`,
         {
           userId: selectedClient,
-          totalValue: sendFormData.totalValue,
-          paidValue: sendFormData.paidValue || 0
+          totalValue: parseFloat(sendFormData.totalValue) || 0,
+          paidValue: parseFloat(sendFormData.paidValue) || 0
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
